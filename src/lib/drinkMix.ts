@@ -38,6 +38,8 @@
  * alive between renders, so this module is pure functions, constants and types.
  */
 
+import type { Flag } from './flags'
+
 // Nutrient content of the salts (mg of the element per gram of salt)
 const MG_SODIUM_PER_G_TABLE_SALT = 393 // NaCl, ~99% pure
 const MG_POTASSIUM_PER_G_KCL = 524 // KCl
@@ -77,11 +79,6 @@ export interface MixInput {
   fluidMlPerHour: number
   saltSetup: SaltSetup
   potassiumPct: number // % KCl in the potassium-rich salt (0–100)
-}
-
-export interface MixFlag {
-  level: 'warn' | 'info'
-  message: string
 }
 
 export interface Preset {
@@ -140,7 +137,7 @@ export interface MixResult {
   stationSipMl: number // = stationMlPerHour / 4
   // advice
   gelCount: number // Math.ceil(shortfallCarbsG / 25)
-  flags: MixFlag[]
+  flags: Flag[]
 }
 
 export const PRESETS: Record<PresetId, Preset> = {
@@ -341,7 +338,7 @@ export function computeMix(input: MixInput): MixResult {
   // figure covers both absorbable fractions per hour.
   const monosaccharideGPerH = Math.round(preset.carbsGPerH * SUCROSE_TO_MONOSACCHARIDE)
 
-  const flags: MixFlag[] = []
+  const flags: Flag[] = []
   if (concentrationCapped && carbsGPerL < idealCarbsGPerL) {
     flags.push({
       level: 'warn',

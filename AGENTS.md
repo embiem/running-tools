@@ -2,22 +2,23 @@
 
 ## Project Overview
 
-`running-tools` is a client-only Svelte 5 + TypeScript + Vite 7 SPA/installable PWA of small utilities for runners. Zero backend, zero runtime `dependencies` (everything is a devDependency). Two tools are implemented: a **cadence metronome** (Web Audio) and a **drink mix calculator** (pure arithmetic over literature-derived targets). Home page is a card grid; unimplemented tools render as placeholders.
+`running-tools` is a client-only Svelte 5 + TypeScript + Vite 7 SPA/installable PWA of small utilities for runners. Zero backend, zero runtime `dependencies` (everything is a devDependency). Three tools are implemented: a **cadence metronome** (Web Audio), a **drink mix calculator** (pure arithmetic over literature-derived targets) and a **taper planner** (pure date and volume arithmetic over the tapering literature). Home page is a card grid; unimplemented tools render as placeholders.
 
 ## Architecture & Data Flow
 
-- **Routing**: hand-rolled hash routing in `src/App.svelte` — no router library. A `routes` map (`'/'` → `src/pages/Home.svelte`, `'/metronome'` → `src/pages/MetronomePage.svelte`, `'/drink-mix'` → `src/pages/DrinkMixPage.svelte`), `location.hash` read + `hashchange` listener, unknown routes fall back to `/`. `PWABadge` is mounted once, in `App.svelte` — do not mount it again in a page.
+- **Routing**: hand-rolled hash routing in `src/App.svelte` — no router library. A `routes` map (`'/'` → `src/pages/Home.svelte`, `'/metronome'` → `src/pages/MetronomePage.svelte`, `'/drink-mix'` → `src/pages/DrinkMixPage.svelte`, `'/taper-planner'` → `src/pages/TaperPlannerPage.svelte`), `location.hash` read + `hashchange` listener, unknown routes fall back to `/`. `PWABadge` is mounted once, in `App.svelte` — do not mount it again in a page.
   - Rationale (documented in `App.svelte` comments): hash routes work from the precached service-worker shell with no server rewrite config → every route works fully offline. **Do not introduce path-based routing or SvelteKit.**
 - **Metronome**: framework-free engine in `src/lib/metronome.ts` (Web Audio "lookahead scheduler": 25 ms `setInterval` polls, schedules clicks up to 120 ms ahead on the audio clock — sample-accurate, throttling-immune). Exported as a **module-level singleton** `export const metronome = new Metronome()`; one engine per app must survive route changes.
 - **UI ↔ engine contract**: `src/lib/Metronome.svelte` binds to the singleton, mirrors `metronome.running` into local `$state` on mount, and one `$effect` is the single source of truth pushing `bpm` → `metronome.bpm` + `localStorage` (`metronome.bpm`). Never instantiate `Metronome` in components.
 - **Drink mix**: stateless pure functions in `src/lib/drinkMix.ts` — no class, no singleton, no DOM. `computeMix(input)` returns the recipe (grams of table salt / potassium chloride / sugar), what the batch delivers (sodium, potassium, carbohydrate, kcal, osmolality → tonicity), coverage of the session plan and the advice flags. `normalizeMixInput` turns any raw value into a valid `MixInput`; `isCompleteMixInput` reports whether every field is filled. Preset targets and concentration caps are derived from the ACSM / joint position-stand literature cited in the module header — **not** from commercial drink formulations.
+- **Taper planner**: stateless pure functions in `src/lib/taperPlanner.ts` — same shape as the drink mix engine. `predictTaper(input, today?)` counts the taper back from race day: the weekly training volume decays geometrically (bisection-solved so the taper window lands 50% below the same number of normal weeks, the middle of the 41–60% band Bosquet 2007 found optimal), then each week's volume is split over its runs and rounded to something runnable. It returns the week and day schedules plus the realized volume reduction and the advice flags. `normalizeTaperInput` validates anything raw (dates included) into a `TaperInput`; `isCompleteTaperInput` gates persistence; `formatDistance`/`todayISO` are shared with the UI. Session *types* (long run, sharpener, day-before strides, rest two days out) are documented convention, not measurement — the module header says which parts are literature and which are layout.
 - **PWA**: `vite-plugin-pwa` with `registerType: 'prompt'`, `injectRegister: false` — SW registration is manual via `src/lib/PWABadge.svelte` (`virtual:pwa-register/svelte`). PWA icons are generated at build time from `public/favicon.svg` via `pwa-assets.config.ts` (`minimal2023Preset`), emitted into `dist/`.
-- **Data flow**: user input → Svelte runes state → engine mutation / `localStorage` → Web Audio scheduling. No network calls, no stores beyond Svelte built-ins. The drink mix tool is the same shape without audio: `input` → `$derived(normalizeMixInput(input))` → `$derived(computeMix(...))`, so one validated snapshot feeds the headline, the batch quantities and the per-bottle division.
+- **Data flow**: user input → Svelte runes state → engine mutation / `localStorage` → Web Audio scheduling. No network calls, no stores beyond Svelte built-ins. The drink mix and taper planner tools are the same shape without audio: `input` → `$derived(normalize…Input(input))` → `$derived(computeMix(…) / predictTaper(…))`, so one validated snapshot feeds every figure on the page. The taper planner additionally derives its flags from today's date, passed in rather than read inside the maths.
 
 ## Key Directories
 
-- `src/pages/` — route-level pages (Home grid, MetronomePage and DrinkMixPage wrappers).
-- `src/lib/` — reusable components and logic (`metronome.ts` engine, `Metronome.svelte` UI, `drinkMix.ts` engine, `DrinkMix.svelte` UI, `PWABadge.svelte` update toast).
+- `src/pages/` — route-level pages (Home grid, MetronomePage, DrinkMixPage and TaperPlannerPage wrappers).
+- `src/lib/` — reusable components and logic (`metronome.ts` engine, `Metronome.svelte` UI, `drinkMix.ts` engine, `DrinkMix.svelte` UI, `taperPlanner.ts` engine, `TaperPlanner.svelte` UI, `flags.ts` shared advice-flag type, `PWABadge.svelte` update toast).
 - `public/` — static assets copied verbatim to `dist/` (only `favicon.svg`).
 - `dist/` — gitignored build output; deployable artifact for any static host (root-path deploy: no `base` set, SW scope `/`).
 
@@ -35,10 +36,10 @@ There is **no** test, lint, or format script. `npm run check` is the only qualit
 ## Code Conventions & Common Patterns
 
 - **Svelte 5 runes everywhere**: `$state`, `$derived`, `$effect`; `mount()` bootstrap in `src/main.ts`. No legacy stores (exception: `PWABadge.svelte` consumes the plugin's generated store wrapped in `$derived`).
-- **Engine/UI separation**: platform logic lives in plain TS (`src/lib/*.ts`) — a class plus module-level singleton when state must survive navigation (`metronome.ts`), pure functions when it must not (`drinkMix.ts`); `.svelte` files are thin bindings with scoped `<style>` blocks. Follow this split for new tools.
+- **Engine/UI separation**: platform logic lives in plain TS (`src/lib/*.ts`) — a class plus module-level singleton when state must survive navigation (`metronome.ts`), pure functions when it must not (`drinkMix.ts`, `taperPlanner.ts`); `.svelte` files are thin bindings with scoped `<style>` blocks. Follow this split for new tools.
 - **Private class fields** (`#ctx`, `#timer`) for engine internals; public surface kept minimal (`bpm`, `running` getter, `start()`/`stop()`).
 - **TypeScript strict** (`@tsconfig/svelte` → strict, `verbatimModuleSyntax`; ES2022; `allowJs`/`checkJs` on for `src/`). Use `interface`/types for data shapes (see `Tool` in `Home.svelte`).
-- **State persistence**: validated `localStorage` read + write in the same `$effect` that drives the engine (see `STORAGE_KEY` pattern in `Metronome.svelte`). Where a bound form can be transiently incomplete, gate the write on completeness (`isCompleteMixInput`) so a half-typed field cannot persist a fallback over the last good value (`DrinkMix.svelte`).
+- **State persistence**: validated `localStorage` read + write in the same `$effect` that drives the engine (see `STORAGE_KEY` pattern in `Metronome.svelte`). Where a bound form can be transiently incomplete, gate the write on completeness (`isCompleteMixInput`, `isCompleteTaperInput`) so a half-typed field cannot persist a fallback over the last good value (`DrinkMix.svelte`, `TaperPlanner.svelte`).
 - **Accessibility**: aria-labels on controls (`aria-label="Cadence in steps per minute"`), `role="alert"` toast, semantic `<details>` for info copy. Keep this up.
 - **Styling**: global `src/app.css` (dark-first, `color-scheme: light dark`, shared `.card`/`.grid`/`.badge` classes) + scoped component styles. No CSS framework; accent `#646cff`.
 - **Browser-only APIs assumed**: `AudioContext`, `localStorage`, `location.hash`. Never add Node-dependent code to `src/`.
@@ -52,6 +53,9 @@ There is **no** test, lint, or format script. `npm run check` is the only qualit
 - `src/lib/Metronome.svelte` — engine UI binding (singleton/state pattern reference).
 - `src/lib/drinkMix.ts` — drink mix engine: pure functions, literature-derived targets, input normalization/validation.
 - `src/lib/DrinkMix.svelte` — drink mix UI binding (form-driven `$derived` chain reference).
+- `src/lib/taperPlanner.ts` — taper planner engine: pure functions over local dates and training volume, literature-derived volume model, schedule layout.
+- `src/lib/TaperPlanner.svelte` — taper planner UI binding (date/number/select form over the same `$derived` chain).
+- `src/lib/flags.ts` — shared `Flag` type (`{ level: 'warn' | 'info'; message: string }`) returned by the drink mix and taper planner engines; no logic, one declaration.
 - `vite.config.ts` — PWA/manifest/workbox config; `pwa-assets.config.ts` — icon generation.
 - `tsconfig.json` — solution-style: references `tsconfig.app.json` (src) and `tsconfig.node.json` (vite.config.ts only; `pwa-assets.config.ts` and `svelte.config.js` are not typechecked).
 - `index.html` — minimal shell; manifest link + theme-color injected at build by the PWA plugin.
@@ -69,4 +73,4 @@ There is **no** test, lint, or format script. `npm run check` is the only qualit
 - **No test framework, test files, CI, linter, or formatter exist.** No `.github/`, no git hooks, no eslint/prettier config.
 - Verification today = `npm run check` (typecheck) + manual/browser smoke testing (dev server + real interaction; e.g. metronome state across hash navigation).
 - `src/lib/Counter.svelte` and `src/assets/svelte.svg` are dead create-vite scaffold leftovers, not referenced anywhere — don't build on them.
-- If adding tests, the untested business logic targets are `src/lib/metronome.ts` (pure scheduling logic) and `src/lib/drinkMix.ts` (pure arithmetic); vitest fits the existing Vite toolchain and needs no new wiring beyond `tsconfig`.
+- If adding tests, the untested business logic targets are `src/lib/metronome.ts` (pure scheduling logic), `src/lib/drinkMix.ts` (pure arithmetic) and `src/lib/taperPlanner.ts` (date arithmetic and volume model — `predictTaper` takes `today` as an optional argument precisely so it can be asserted deterministically); vitest fits the existing Vite toolchain and needs no new wiring beyond `tsconfig`.

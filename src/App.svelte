@@ -2,6 +2,7 @@
   import Home from './pages/Home.svelte'
   import MetronomePage from './pages/MetronomePage.svelte'
   import DrinkMixPage from './pages/DrinkMixPage.svelte'
+  import TaperPlannerPage from './pages/TaperPlannerPage.svelte'
   import PWABadge from './lib/PWABadge.svelte'
 
   // Hash routing: works from the precached service worker shell with zero
@@ -10,6 +11,7 @@
     '/': Home,
     '/metronome': MetronomePage,
     '/drink-mix': DrinkMixPage,
+    '/taper-planner': TaperPlannerPage,
   }
 
   function currentRoute(): keyof typeof routes {

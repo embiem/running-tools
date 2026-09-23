@@ -29,6 +29,12 @@
       href: null,
       image: img('photo-1571008887538-b36bb32f4571'),
     },
+    {
+      name: 'Taper Planner',
+      description: 'Count your taper back from race day',
+      href: '/#/taper-planner',
+      image: img('photo-1461896836934-ffe607ba8211'),
+    },
   ]
 </script>
 

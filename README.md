@@ -5,6 +5,8 @@ A small collection of offline-friendly tools for runners, built as an installabl
 ## Tools
 
 - **Cadence Metronome**: an audible beat at 120-220 steps/min to help you lock in your running cadence. The tempo persists between sessions, and the beat keeps playing as you navigate between pages.
+- **Drink Mix Calculator**: mixes your own run fuel from table salt, potassium salt and sugar, sized to a session plan from the ACSM fluid and carbohydrate guidance.
+- **Taper Planner**: counts a taper back from race day — the weekly training volume to run and a day-by-day schedule, following the tapering literature (Mujika & Padilla 2003; Bosquet et al. 2007).
 - **Race Predictor**: coming soon.
 
 ## Development
