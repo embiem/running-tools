@@ -28,9 +28,9 @@
 
 	root * {{.DIST_DIR}}
 
-	# Vite fingerprints everything under /assets with a content hash, so it is
-	# safe (and required, to avoid MIME-type errors from a stale index.html
-	# requesting a hash that no longer exists on disk) to cache it forever.
+	# Vite fingerprints everything under /assets with a content hash, so a given
+	# URL's bytes never change and it can be cached forever. The `file` gate
+	# keeps that year-long TTL off 404s for hashes a later deploy removed.
 	@hashed {
 		path /assets/*
 		file
@@ -44,6 +44,10 @@
 		not path /assets/*
 	}
 	header @unhashed Cache-Control "no-cache"
+
+	# Caddy has no MIME mapping for .webmanifest, so file_server would leave the
+	# type to content sniffing (text/plain in the deploy image).
+	header /manifest.webmanifest Content-Type "application/manifest+json"
 
 	file_server {
 		hide .git
