@@ -18,6 +18,12 @@
       image: img('photo-1552674605-db6ffd4facb5'),
     },
     {
+      name: 'Drink Mix Calculator',
+      description: 'Mix your own run fuel from salt and sugar',
+      href: '/#/drink-mix',
+      image: img('photo-1625708458528-802ec79b1ed8'),
+    },
+    {
       name: 'Race Predictor',
       description: 'Estimate race times from a recent result',
       href: null,

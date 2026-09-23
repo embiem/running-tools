@@ -1,14 +1,14 @@
 <script lang="ts">
-  import Metronome from '../lib/Metronome.svelte'
+  import DrinkMix from '../lib/DrinkMix.svelte'
 </script>
 
 <main>
-  <h1>Cadence Metronome</h1>
+  <h1>Drink Mix Calculator</h1>
 
   <a class="back" href="/#/">← All tools</a>
 
   <div class="card">
-    <Metronome />
+    <DrinkMix />
   </div>
 
 </main>

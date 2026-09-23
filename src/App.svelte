@@ -1,6 +1,7 @@
 <script lang="ts">
   import Home from './pages/Home.svelte'
   import MetronomePage from './pages/MetronomePage.svelte'
+  import DrinkMixPage from './pages/DrinkMixPage.svelte'
   import PWABadge from './lib/PWABadge.svelte'
 
   // Hash routing: works from the precached service worker shell with zero
@@ -8,6 +9,7 @@
   const routes = {
     '/': Home,
     '/metronome': MetronomePage,
+    '/drink-mix': DrinkMixPage,
   }
 
   function currentRoute(): keyof typeof routes {
