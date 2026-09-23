@@ -26,7 +26,7 @@
     {
       name: 'Race Predictor',
       description: 'Estimate race times from a recent result',
-      href: null,
+      href: '/#/race-predictor',
       image: img('photo-1571008887538-b36bb32f4571'),
     },
     {

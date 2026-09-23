@@ -19,6 +19,20 @@
  *   41–60%, with no modification of either intensity or frequency. Bosquet L,
  *   Montpetit J, Arvisais D, Mujika I, "Effects of tapering on performance: a
  *   meta-analysis", Med Sci Sports Exerc 2007;39(8):1358-65 (PMID 17762369).
+ *   Its 27 studies pooled 439 competitive athletes of whom only 110 were
+ *   runners (249 swimmers, 80 cyclists), so the band is used here as a target
+ *   for running, not as a running measurement.
+ * - The largest data set from runners themselves agrees with the shape and the
+ *   length: of 158,117 recreational marathoners, those whose weekly volume fell
+ *   in every taper week out-performed those whose did not, longer tapers beat
+ *   shorter ones up to 3 weeks, and a strict 3-week taper was worth a median
+ *   5 min 32 s (2.6%) against a minimal one. Those runners averaged 39.3 km
+ *   (women) and 43.2 km (men) a week over 3.6 runs, and their tapers were
+ *   gentler than the meta-analysis band: roughly 30–40% off the normal week,
+ *   with race week at 35–50% of it. Smyth B, Lawlor A, "Longer disciplined
+ *   tapers improve marathon performance for recreational runners", Front Sports
+ *   Act Living 2021;3:735220. The default normal week, run count and the volume
+ *   thresholds below come from that table.
  * - So the weekly training volume here decays geometrically, with the decay
  *   calibrated so that the volume over the whole taper window lands 50% below
  *   the same number of normal weeks — the middle of that 41–60% band. The race
@@ -26,10 +40,12 @@
  *   the race. The reduction actually scheduled is reported back, so the day
  *   layout can be checked against the band rather than assumed.
  * - Session types are convention, not measurement: frequency is unchanged (the
- *   same number of runs, each shorter), one long run per week up to race week,
- *   one short race-pace sharpener per week, everything scaled down with the
- *   week. That is "maintain intensity, cut volume" from both papers expressed
- *   as a calendar.
+ *   same number of runs, each shorter), one long run per week up to race week
+ *   (about 40% of the week's distance in the marathoner data above), one short
+ *   race-pace sharpener per week, everything scaled down with the week. That is
+ *   "maintain intensity, cut volume" from both papers expressed as a calendar;
+ *   keeping the intensity is the part the intervention studies actually test
+ *   (Shepley 1992; Mujika 2000), the calendar around it is running practice.
  *
  * Stateless by design: pure functions, constants and types.
  */
@@ -52,15 +68,31 @@ const WEIGHT_QUALITY = 1.2
 const WEIGHT_EASY = 1
 const WEIGHT_STRIDES = 0.8
 
-/** The day-before shakeout never grows into a real run, whatever the weights say. */
+/**
+ * The day-before shakeout never grows into a real run, whatever the weights
+ * say: a short jog with a few strides is priming, and the evidence for it is
+ * small and variable (Hedges' g ≈ 0.23, prediction interval spanning zero, in
+ * the 2025 delayed-priming meta-analysis), so it stays a habit to keep light
+ * rather than a session to bank.
+ */
 const STRIDES_CAP_METERS = 6000
 
-/** A sharpener sits three days into its week, but never closer than this to the race. */
+/**
+ * A sharpener sits three days into its week, but never closer than this to the
+ * race. Keeping the intensity is the part the evidence requires; a hard session
+ * also needs days to be absorbed, so the last one stays at least five days out
+ * (running practice, not a published protocol).
+ */
 const MIN_SHARPENER_DAYS = 5
 
-/** Volumes below these make a taper close to meaningless (20 km / 50 km a week). */
+/**
+ * Volumes below these make a taper close to meaningless. The lower one is half
+ * the average recreational marathoner's week; the upper one is that average
+ * itself (39.3 km women / 43.2 km men, Smyth & Lawlor 2021), under which three
+ * weeks is more than the meta-analysis optimum calls for.
+ */
 const LOW_VOLUME_METERS = 20_000
-const LONG_TAPER_VOLUME_METERS = 50_000
+const LONG_TAPER_VOLUME_METERS = 40_000
 
 export type DistanceId = '5k' | '10k' | '10mi' | 'hm' | 'marathon' | 'custom'
 export type Unit = 'km' | 'mi'
@@ -136,11 +168,17 @@ export const SESSION_LABELS: Record<SessionKind, string> = {
   rest: 'Rest',
 }
 
+/**
+ * Numeric limits and defaults. The two distance defaults are the average weekly
+ * distance of the 158,117 recreational marathoners in Smyth & Lawlor 2021
+ * (39.3 km / 43.2 km) and their 3.6 runs a week, rounded to something a form
+ * can start from.
+ */
 export const LIMITS = {
   customMeters: { min: 800, max: 200_000, step: 100, fallback: 10_000 },
-  weeklyDistanceKm: { min: 10, max: 400, step: 1, fallback: 60 },
-  weeklyDistanceMi: { min: 5, max: 250, step: 1, fallback: 35 },
-  runsPerWeek: { min: 2, max: 7, step: 1, fallback: 5 },
+  weeklyDistanceKm: { min: 10, max: 400, step: 1, fallback: 40 },
+  weeklyDistanceMi: { min: 5, max: 250, step: 1, fallback: 25 },
+  runsPerWeek: { min: 2, max: 7, step: 1, fallback: 4 },
 } as const
 
 interface Bounds {
@@ -307,7 +345,9 @@ function geometricSum(x: number, terms: number): number {
  * reduction: solve Σ x^i = weeks × (1 − TAPER_VOLUME_REDUCTION) for x in (0,1)
  * by bisection. Two weeks gives x ≈ 0.618 (weeks at 62% and 38% of normal);
  * three weeks decays more gently (69%, 48%, 33%), since the same total
- * reduction is spread over one more week.
+ * reduction is spread over one more week. The runnable-distance grid moves a
+ * week's realized share by a point or so either way; `totalReductionPct` on the
+ * result reports what the days actually add up to.
  */
 function taperDecay(weeks: number): number {
   const target = weeks * (1 - TAPER_VOLUME_REDUCTION)
@@ -344,6 +384,11 @@ function spread(pool: number[], count: number): number[] {
  * day-before shakeout is capped: whatever the weights say, it stays a shakeout,
  * and any excess it sheds goes to the other days (or is dropped, if it is the
  * week's only run).
+ *
+ * Rounding takes the largest remainders, so the week's days add up to the week's
+ * target instead of drifting above it: the metres each day loses to the grid are
+ * handed back to the days that lost the most, and the shakeout never receives a
+ * step back.
  */
 function distributeVolume(
   volumeMeters: number,
@@ -357,9 +402,13 @@ function distributeVolume(
   const meters = weights.map((weight) => (weight / totalWeight) * volumeMeters)
 
   const stridesIndex = running.findIndex((slot) => slot.kind === 'strides')
-  if (stridesIndex >= 0 && meters[stridesIndex] > STRIDES_CAP_METERS) {
-    const excess = meters[stridesIndex] - STRIDES_CAP_METERS
-    meters[stridesIndex] = STRIDES_CAP_METERS
+  // The cap is a metric constant; snap it down to the unit's grid so the
+  // shakeout stays a round number in miles too (3.5 mi rather than 3.7 mi).
+  const stridesCap =
+    Math.max(1, Math.floor(STRIDES_CAP_METERS / roundStepMeters)) * roundStepMeters
+  if (stridesIndex >= 0 && meters[stridesIndex] > stridesCap) {
+    const excess = meters[stridesIndex] - stridesCap
+    meters[stridesIndex] = stridesCap
     const otherWeight = weights.reduce((sum, w, k) => (k === stridesIndex ? sum : sum + w), 0)
     if (otherWeight > 0) {
       meters.forEach((value, k) => {
@@ -368,9 +417,28 @@ function distributeVolume(
     }
   }
 
+  const steps = meters.map((value) => Math.max(1, Math.floor(value / roundStepMeters)))
+  const target = Math.max(steps.length, Math.round(volumeMeters / roundStepMeters))
+  let leftover = target - steps.reduce((sum, value) => sum + value, 0)
+  const byRemainder = meters
+    .map((value, k) => ({ k, remainder: value / roundStepMeters - steps[k] }))
+    .sort((a, b) => b.remainder - a.remainder)
+
+  for (const { k } of byRemainder) {
+    if (leftover <= 0) break
+    if (k === stridesIndex) continue
+    steps[k]++
+    leftover--
+  }
+  for (let i = byRemainder.length - 1; i >= 0 && leftover < 0; i--) {
+    const { k } = byRemainder[i]
+    if (steps[k] <= 1) continue
+    steps[k]--
+    leftover++
+  }
+
   running.forEach((slot, k) => {
-    const rounded = Math.round(meters[k] / roundStepMeters) * roundStepMeters
-    slot.meters = Math.max(roundStepMeters, rounded)
+    slot.meters = steps[k] * roundStepMeters
   })
 }
 

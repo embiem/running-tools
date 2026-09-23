@@ -1,4 +1,5 @@
 <script lang="ts">
+  import Panel from './Panel.svelte'
   import {
     LIMITS,
     PRESETS,
@@ -65,131 +66,139 @@
   }
 </script>
 
-<section aria-label="Drink mix calculator">
-  <h2>Your session</h2>
-  <div class="presets" role="group" aria-label="Session preset">
-    {#each presetEntries as [id, preset] (id)}
-      <button
-        type="button"
-        class:selected={input.preset === id}
-        aria-pressed={input.preset === id}
-        onclick={() => selectPreset(id)}
-      >
-        {preset.label}
-        <span class="preset-tagline">{preset.tagline}</span>
-      </button>
-    {/each}
-  </div>
-  <p class="preset-hint">
-    {presetMeta.carbsGPerH} g carbs/h · {presetMeta.sodiumMgPerH} mg sodium/h
-  </p>
-
-  <h2>Your setup</h2>
-  <div class="fields">
-    <label>
-      <span class="label-text">Session length</span>
-      <span class="label-input">
-        <input
-          type="number"
-          min={LIMITS.durationMin.min}
-          max={LIMITS.durationMin.max}
-          step={LIMITS.durationMin.step}
-          bind:value={input.durationMin}
-          aria-label="Session length in minutes"
-        />
-        <span class="unit">min</span>
-      </span>
-    </label>
-
-    <label>
-      <span class="label-text">Bottle size</span>
-      <span class="label-input">
-        <input
-          type="number"
-          min={LIMITS.bottleMl.min}
-          max={LIMITS.bottleMl.max}
-          step={LIMITS.bottleMl.step}
-          bind:value={input.bottleMl}
-          aria-label="Bottle size in millilitres"
-        />
-        <span class="unit">ml</span>
-      </span>
-    </label>
-
-    <label>
-      <span class="label-text">Bottles you carry</span>
-      <span class="label-input">
-        <input
-          type="number"
-          min={LIMITS.bottles.min}
-          max={LIMITS.bottles.max}
-          step={LIMITS.bottles.step}
-          bind:value={input.bottles}
-          aria-label="Number of bottles you carry"
-        />
-        <span class="total">= {(result.carryMl / 1000).toFixed(2)} L total</span>
-      </span>
-    </label>
-
-    <label>
-      <span class="label-text">
-        Your fluid intake
-        <span class="hint">
-          Sweat rate is typically 0.5–2.0 L/h, higher in heat and at race pace — weigh yourself
-          before and after a run to find yours.
-        </span>
-      </span>
-      <span class="label-input">
-        <input
-          type="number"
-          min={LIMITS.fluidMlPerHour.min}
-          max={LIMITS.fluidMlPerHour.max}
-          step={LIMITS.fluidMlPerHour.step}
-          bind:value={input.fluidMlPerHour}
-          aria-label="Your fluid intake in millilitres per hour"
-        />
-        <span class="unit">ml/h</span>
-      </span>
-    </label>
-
-    <div class="salt" role="radiogroup" aria-label="Salt you have">
-      <label>
-        <input type="radio" name="saltSetup" value="table" bind:group={input.saltSetup} />
-        Table salt only
-      </label>
-      <label>
-        <input
-          type="radio"
-          name="saltSetup"
-          value="table-potassium"
-          bind:group={input.saltSetup}
-        />
-        Table salt + potassium-rich salt
-      </label>
+<section class="tool" aria-label="Drink mix calculator">
+  <Panel
+    title="Your session"
+    hint="Pick the closest fit — the preset sets the carbohydrate and sodium targets the mix is built to hit."
+  >
+    <div class="presets" role="group" aria-label="Session preset">
+      {#each presetEntries as [id, preset] (id)}
+        <button
+          type="button"
+          class:selected={input.preset === id}
+          aria-pressed={input.preset === id}
+          onclick={() => selectPreset(id)}
+        >
+          {preset.label}
+          <span class="preset-tagline">{preset.tagline}</span>
+        </button>
+      {/each}
     </div>
+    <p class="preset-hint">
+      {presetMeta.carbsGPerH} g carbs/h · {presetMeta.sodiumMgPerH} mg sodium/h
+    </p>
+  </Panel>
 
-    {#if input.saltSetup === 'table-potassium'}
+  <Panel
+    title="Your setup"
+    hint="What you carry and how much you drink — the mix is sized to that."
+  >
+    <div class="fields">
+      <label>
+        <span class="label-text">Session length</span>
+        <span class="label-input">
+          <input
+            type="number"
+            min={LIMITS.durationMin.min}
+            max={LIMITS.durationMin.max}
+            step={LIMITS.durationMin.step}
+            bind:value={input.durationMin}
+            aria-label="Session length in minutes"
+          />
+          <span class="unit">min</span>
+        </span>
+      </label>
+
+      <label>
+        <span class="label-text">Bottle size</span>
+        <span class="label-input">
+          <input
+            type="number"
+            min={LIMITS.bottleMl.min}
+            max={LIMITS.bottleMl.max}
+            step={LIMITS.bottleMl.step}
+            bind:value={input.bottleMl}
+            aria-label="Bottle size in millilitres"
+          />
+          <span class="unit">ml</span>
+        </span>
+      </label>
+
+      <label>
+        <span class="label-text">Bottles you carry</span>
+        <span class="label-input">
+          <input
+            type="number"
+            min={LIMITS.bottles.min}
+            max={LIMITS.bottles.max}
+            step={LIMITS.bottles.step}
+            bind:value={input.bottles}
+            aria-label="Number of bottles you carry"
+          />
+          <span class="total">= {(result.carryMl / 1000).toFixed(2)} L total</span>
+        </span>
+      </label>
+
       <label>
         <span class="label-text">
-          Potassium in that salt
+          Your fluid intake
           <span class="hint">
-            LoSalt ≈ 66 %, many reduced-sodium blends ≈ 30–50 %, your blend 33 %.
+            Sweat rate is typically 0.5–2.0 L/h, higher in heat and at race pace — weigh yourself
+            before and after a run to find yours.
           </span>
         </span>
         <span class="label-input">
           <input
             type="number"
-            min={LIMITS.potassiumPct.min}
-            max={LIMITS.potassiumPct.max}
-            step={LIMITS.potassiumPct.step}
-            bind:value={input.potassiumPct}
-            aria-label="Percentage of potassium chloride in your potassium-rich salt"
+            min={LIMITS.fluidMlPerHour.min}
+            max={LIMITS.fluidMlPerHour.max}
+            step={LIMITS.fluidMlPerHour.step}
+            bind:value={input.fluidMlPerHour}
+            aria-label="Your fluid intake in millilitres per hour"
           />
-          <span class="unit">% KCl</span>
+          <span class="unit">ml/h</span>
         </span>
       </label>
-    {/if}
-  </div>
+
+      <div class="salt" role="radiogroup" aria-label="Salt you have">
+        <label>
+          <input type="radio" name="saltSetup" value="table" bind:group={input.saltSetup} />
+          Table salt only
+        </label>
+        <label>
+          <input
+            type="radio"
+            name="saltSetup"
+            value="table-potassium"
+            bind:group={input.saltSetup}
+          />
+          Table salt + potassium-rich salt
+        </label>
+      </div>
+
+      {#if input.saltSetup === 'table-potassium'}
+        <label>
+          <span class="label-text">
+            Potassium in that salt
+            <span class="hint">
+              LoSalt ≈ 66 %, many reduced-sodium blends ≈ 30–50 %, your blend 33 %.
+            </span>
+          </span>
+          <span class="label-input">
+            <input
+              type="number"
+              min={LIMITS.potassiumPct.min}
+              max={LIMITS.potassiumPct.max}
+              step={LIMITS.potassiumPct.step}
+              bind:value={input.potassiumPct}
+              aria-label="Percentage of potassium chloride in your potassium-rich salt"
+            />
+            <span class="unit">% KCl</span>
+          </span>
+        </label>
+      {/if}
+    </div>
+  </Panel>
 
   <button type="button" class="reset" onclick={reset}>Reset to defaults</button>
 
@@ -311,7 +320,7 @@
 </section>
 
 <style>
-  section {
+  .tool {
     display: flex;
     flex-direction: column;
     align-items: stretch;

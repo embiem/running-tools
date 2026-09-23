@@ -1,4 +1,5 @@
 <script lang="ts">
+  import Panel from './Panel.svelte'
   import {
     DISTANCES,
     LIMITS,
@@ -92,112 +93,123 @@
   }
 </script>
 
-<section aria-label="Taper planner">
-  <h2>Your race</h2>
-  <div class="fields">
-    <label>
-      <span class="label-text">Race date</span>
-      <span class="label-input">
-        <input type="date" bind:value={input.raceDate} aria-label="Race date" />
-      </span>
-    </label>
-
-    <label>
-      <span class="label-text">Distance</span>
-      <span class="label-input">
-        <select bind:value={input.distance} aria-label="Race distance">
-          {#each distanceEntries as [id, preset] (id)}
-            <option value={id}>{preset.label}</option>
-          {/each}
-        </select>
-      </span>
-    </label>
-
-    {#if effective.distance === 'custom'}
+<section class="tool" aria-label="Taper planner">
+  <Panel
+    title="Your race"
+    hint="The date and distance you are tapering for — the plan counts back from race day."
+  >
+    <div class="fields">
       <label>
-        <span class="label-text">Custom distance</span>
+        <span class="label-text">Race date</span>
+        <span class="label-input">
+          <input type="date" bind:value={input.raceDate} aria-label="Race date" />
+        </span>
+      </label>
+
+      <label>
+        <span class="label-text">Distance</span>
+        <span class="label-input">
+          <select bind:value={input.distance} aria-label="Race distance">
+            {#each distanceEntries as [id, preset] (id)}
+              <option value={id}>{preset.label}</option>
+            {/each}
+          </select>
+        </span>
+      </label>
+
+      {#if effective.distance === 'custom'}
+        <label>
+          <span class="label-text">Custom distance</span>
+          <span class="label-input">
+            <input
+              type="number"
+              min={LIMITS.customMeters.min}
+              max={LIMITS.customMeters.max}
+              step={LIMITS.customMeters.step}
+              bind:value={input.customMeters}
+              aria-label="Custom race distance in metres"
+            />
+            <span class="unit">m</span>
+          </span>
+        </label>
+      {/if}
+
+      <div class="choice" role="radiogroup" aria-label="Distance unit">
+        <label>
+          <input
+            type="radio"
+            name="unit"
+            value="km"
+            checked={effective.unit === 'km'}
+            onchange={() => setUnit('km')}
+          /> Kilometres
+        </label>
+        <label>
+          <input
+            type="radio"
+            name="unit"
+            value="mi"
+            checked={effective.unit === 'mi'}
+            onchange={() => setUnit('mi')}
+          /> Miles
+        </label>
+      </div>
+    </div>
+  </Panel>
+
+  <Panel
+    title="Your training"
+    hint="A normal week and how you split it — the taper cuts this volume, not your run count."
+  >
+    <div class="fields">
+      <label>
+        <span class="label-text">
+          Normal training week
+          <span class="hint">Your average weekly distance in the weeks before the taper.</span>
+        </span>
         <span class="label-input">
           <input
             type="number"
-            min={LIMITS.customMeters.min}
-            max={LIMITS.customMeters.max}
-            step={LIMITS.customMeters.step}
-            bind:value={input.customMeters}
-            aria-label="Custom race distance in metres"
+            min={weeklyBounds.min}
+            max={weeklyBounds.max}
+            step={weeklyBounds.step}
+            bind:value={input.weeklyDistance}
+            aria-label="Normal weekly distance"
           />
-          <span class="unit">m</span>
+          <span class="unit">{effective.unit}</span>
         </span>
       </label>
-    {/if}
 
-    <div class="choice" role="radiogroup" aria-label="Distance unit">
       <label>
-        <input
-          type="radio"
-          name="unit"
-          value="km"
-          checked={effective.unit === 'km'}
-          onchange={() => setUnit('km')}
-        /> Kilometres
+        <span class="label-text">
+          Runs per week
+          <span class="hint">Unchanged by the taper — the runs get shorter, not fewer.</span>
+        </span>
+        <span class="label-input">
+          <input
+            type="number"
+            min={LIMITS.runsPerWeek.min}
+            max={LIMITS.runsPerWeek.max}
+            step={LIMITS.runsPerWeek.step}
+            bind:value={input.runsPerWeek}
+            aria-label="Runs per week"
+          />
+        </span>
       </label>
-      <label>
-        <input
-          type="radio"
-          name="unit"
-          value="mi"
-          checked={effective.unit === 'mi'}
-          onchange={() => setUnit('mi')}
-        /> Miles
-      </label>
+
+      <div class="choice" role="radiogroup" aria-label="Taper length">
+        {#each TAPER_WEEKS_OPTIONS as weeks (weeks)}
+          <label>
+            <input type="radio" name="taperWeeks" value={weeks} bind:group={input.taperWeeks} />
+            {weeks} weeks
+          </label>
+        {/each}
+      </div>
+      <p class="preset-hint">
+        {result.weeks.map((week) => `${week.pctOfNormal}%`).join(' · ')} of your normal week
+      </p>
     </div>
-
-    <label>
-      <span class="label-text">
-        Normal training week
-        <span class="hint">Your average weekly distance in the weeks before the taper.</span>
-      </span>
-      <span class="label-input">
-        <input
-          type="number"
-          min={weeklyBounds.min}
-          max={weeklyBounds.max}
-          step={weeklyBounds.step}
-          bind:value={input.weeklyDistance}
-          aria-label="Normal weekly distance"
-        />
-        <span class="unit">{effective.unit}</span>
-      </span>
-    </label>
-
-    <label>
-      <span class="label-text">
-        Runs per week
-        <span class="hint">Unchanged by the taper — the runs get shorter, not fewer.</span>
-      </span>
-      <span class="label-input">
-        <input
-          type="number"
-          min={LIMITS.runsPerWeek.min}
-          max={LIMITS.runsPerWeek.max}
-          step={LIMITS.runsPerWeek.step}
-          bind:value={input.runsPerWeek}
-          aria-label="Runs per week"
-        />
-      </span>
-    </label>
-
-    <div class="choice" role="radiogroup" aria-label="Taper length">
-      {#each TAPER_WEEKS_OPTIONS as weeks (weeks)}
-        <label>
-          <input type="radio" name="taperWeeks" value={weeks} bind:group={input.taperWeeks} />
-          {weeks} weeks
-        </label>
-      {/each}
-    </div>
-    <p class="preset-hint">
-      {result.weeks.map((week) => `${week.pctOfNormal}%`).join(' · ')} of your normal week
-    </p>
-  </div>
+  </Panel>
 
   <button type="button" class="reset" onclick={reset}>Reset to defaults</button>
 
@@ -278,16 +290,25 @@
       Session types are convention, not measurement. The papers prescribe maintained intensity and
       frequency, so the plan keeps your number of runs, one long run per week until race week, and one
       short race-pace sharpener per week — with every run scaled down with its week. The day-before
-      shakeout with strides, and the rest day two days out, are running convention rather than a
-      published protocol, and the meta-analysis is dominated by swimming and cycling: running plans
-      often cut less in the first taper week and more in race week. Use the schedule as a volume
-      target, and keep the intensity the papers actually insist on.
+      shakeout with strides and the rest day two days out are running practice rather than a published
+      protocol, and the evidence for priming with a short session the day before is small and variable.
+    </p>
+    <p>
+      For runners specifically, the largest data set available agrees with the shape and the length.
+      Across 158,117 recreational marathoners (Smyth &amp; Lawlor, <em>Front Sports Act Living</em>
+      2021;3:735220), tapers that cut volume every week out-performed tapers that did not, longer tapers
+      beat shorter ones up to three weeks, and a strict three-week taper was worth a median 5 min 32 s
+      (2.6%) against a minimal one. Those tapers were gentler than the meta-analysis optimum — roughly
+      30–40% off the normal week, with race week holding 35–50% of it — and this planner targets 33%
+      (three weeks) or 38% (two weeks) in race week. Bosquet's pooled studies were mostly swimmers and
+      cyclists (249 swimmers, 80 cyclists, 110 runners), so treat the volume numbers as a target and
+      keep the intensity the papers insist on.
     </p>
   </details>
 </section>
 
 <style>
-  section {
+  .tool {
     display: flex;
     flex-direction: column;
     align-items: stretch;
