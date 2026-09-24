@@ -17,6 +17,7 @@ export class Metronome {
   #beat = 0
 
   bpm = 170
+  volume = 0.5
 
   get running(): boolean {
     return this.#timer !== null
@@ -49,7 +50,7 @@ export class Metronome {
     while (this.#nextTickTime < ctx.currentTime + LOOKAHEAD_SECONDS) {
       // Every 4th beat (downbeat) gets a higher pitch — audible 4-beat phrase.
       const freq = this.#beat % 4 === 0 ? 1400 : 1000
-      this.#tick(ctx, this.#nextTickTime, freq, 0.5)
+      this.#tick(ctx, this.#nextTickTime, freq, this.volume)
       this.#nextTickTime += secondsPerBeat
       this.#beat++
     }
@@ -62,6 +63,8 @@ export class Metronome {
     freq: number,
     peakGain: number,
   ): void {
+    const isMuted = peakGain <= 0
+    if (isMuted) return
     const osc = ctx.createOscillator()
     const gain = ctx.createGain()
     osc.type = 'sine'

@@ -5,20 +5,39 @@
   const MAX_BPM = 220
   const STEP = 5
   const STORAGE_KEY = 'metronome.bpm'
+  const VOLUME_STORAGE_KEY = 'metronome.volume'
 
   function clamp(value: number): number {
     return Math.min(MAX_BPM, Math.max(MIN_BPM, value))
+  }
+
+  function clampVolume(value: number): number {
+    return Math.min(1, Math.max(0, value))
   }
 
   const saved = Number(localStorage.getItem(STORAGE_KEY))
   let bpm = $state(Number.isFinite(saved) && saved >= MIN_BPM && saved <= MAX_BPM ? saved : metronome.bpm)
   let running = $state(metronome.running)
 
+  function readStoredVolume(): number | null {
+    const stored = localStorage.getItem(VOLUME_STORAGE_KEY)
+    if (stored === null) return null
+    const parsed = Number(stored)
+    return Number.isFinite(parsed) ? clampVolume(parsed) : null
+  }
+
+  let volume = $state(readStoredVolume() ?? metronome.volume)
+
   // Single source of truth: any bpm change (slider or buttons) updates the
   // engine mid-playback and persists across sessions.
   $effect(() => {
     metronome.bpm = bpm
     localStorage.setItem(STORAGE_KEY, String(bpm))
+  })
+
+  $effect(() => {
+    metronome.volume = volume
+    localStorage.setItem(VOLUME_STORAGE_KEY, String(volume))
   })
 
   function adjust(delta: number): void {
@@ -57,6 +76,19 @@
     <button type="button" onclick={() => adjust(STEP)} aria-label="Increase cadence">
       +{STEP}
     </button>
+  </div>
+
+  <div class="volume">
+    <label for="click-volume">Volume</label>
+    <input
+      id="click-volume"
+      type="range"
+      min="0"
+      max="1"
+      step="0.05"
+      bind:value={volume}
+    />
+    <span class="volume-value">{Math.round(volume * 100)}%</span>
   </div>
 
   <button type="button" class="toggle" onclick={toggle}>
@@ -113,6 +145,26 @@
   input[type='range'] {
     flex: 1;
     accent-color: #646cff;
+  }
+
+  .volume {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    width: min(24rem, 100%);
+  }
+
+  .volume label {
+    font-size: 0.9rem;
+    color: #888;
+  }
+
+  .volume-value {
+    min-width: 2.5rem;
+    text-align: right;
+    font-size: 0.9rem;
+    font-variant-numeric: tabular-nums;
+    color: #888;
   }
 
   .toggle {
