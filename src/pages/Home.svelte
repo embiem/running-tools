@@ -35,6 +35,12 @@
       href: '/#/taper-planner',
       image: img('photo-1461896836934-ffe607ba8211'),
     },
+    {
+      name: 'Guided Workouts',
+      description: 'Narrated warm-up and stretch sessions',
+      href: '/#/workouts',
+      image: img('photo-1518310383802-640c2de311b2'),
+    },
   ]
 </script>
 

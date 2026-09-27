@@ -1,0 +1,415 @@
+{
+  "model": "onnx-community/Kokoro-82M-v1.0-ONNX",
+  "voice": "af_bella",
+  "speed": 1,
+  "clips": {
+    "Almost there. Stand tall. Strong and controlled on the next one.": {
+      "file": "0fd13a64a80cbe01.mp3",
+      "duration": 5.03
+    },
+    "Arm circles. Stretch your arms out to the sides. Circle them forward, starting small and growing bigger. I'll tell you when to reverse.": {
+      "file": "0838f8d4f9dbdb36.mp3",
+      "duration": 9.07
+    },
+    "Butt kicks. Jog in place again, this time kicking your heels up toward your glutes. Stay quick and light, and let the arms swing.": {
+      "file": "ac57a0b2a6aae088.mp3",
+      "duration": 8.82
+    },
+    "Butterfly stretch. Sit tall with the soles of your feet together and knees dropped out. Hold your ankles and lean forward from the hips with a long, flat back. Breathe into it.": {
+      "file": "bca5a55db692d380.mp3",
+      "duration": 11.57
+    },
+    "Calf stretch. Step one foot back, keep that leg straight and the heel pressed down, front knee bent. Lean gently in until you feel the big calf muscle lengthen. About thirty seconds each side.": {
+      "file": "7927747b79f8ef0d.mp3",
+      "duration": 12.93
+    },
+    "Catch your breath. Shake out your legs.": {
+      "file": "ca99709592371b01.mp3",
+      "duration": 2.95
+    },
+    "Deep calf stretch. Stay in the same stance, but bend the back knee while keeping the heel down. This reaches the deep calf, the workhorse that pushes you off every step. About twenty-five seconds each side.": {
+      "file": "a92a3431e835e263.mp3",
+      "duration": 13.43
+    },
+    "Done. Nice work!": {
+      "file": "0b8869b4c393366a.mp3",
+      "duration": 2.1
+    },
+    "Figure-four stretch. Still on your back: cross one ankle over the opposite knee, then pull that thigh toward your chest until you feel the glute. Head and shoulders stay down. About thirty seconds each side.": {
+      "file": "20c5f0d4bf5c653a.mp3",
+      "duration": 13.43
+    },
+    "Find a wall. Move somewhere with a wall, rail or post to lean on.": {
+      "file": "6ff4dc6f17df5caa.mp3",
+      "duration": 4.8
+    },
+    "Find support. Move next to a wall, a post, anything you can hold on to.": {
+      "file": "c036e89b91c85cb4.mp3",
+      "duration": 5.5
+    },
+    "Get ready. Find a little space and stand tall. We start in fifteen seconds.": {
+      "file": "1716b92f46ae3c4e.mp3",
+      "duration": 5.5
+    },
+    "Get ready. Let your breathing settle. Easy does it, we take it slow.": {
+      "file": "6c144c25238e2bf1.mp3",
+      "duration": 4.75
+    },
+    "Hamstring stretch. Lie on your back and raise one leg, holding it behind the thigh with a soft knee. Draw it toward you until you feel the hamstring lengthen. Keep the other leg bent. About thirty seconds each side.": {
+      "file": "d53afe744c87b581.mp3",
+      "duration": 13.82
+    },
+    "High knees. Jog in place, driving your knees up to hip height. Land softly on the balls of your feet, quick but relaxed.": {
+      "file": "177ea8bd1e464a34.mp3",
+      "duration": 8.35
+    },
+    "Hip circles. Hands on hips. Circle your hips round like you're stirring a big pot. Start small and keep it smooth.": {
+      "file": "cbb0471b51038436.mp3",
+      "duration": 7.75
+    },
+    "Hip flexor stretch. Half-kneel with one foot forward and the back knee down. Tuck the tailbone under and shift the hips gently forward until you feel the front of the hip open. About thirty seconds each side.": {
+      "file": "63afd2bc353eb4f6.mp3",
+      "duration": 13.3
+    },
+    "Last one. Nearly there. Finish light.": {
+      "file": "354505025f57e000.mp3",
+      "duration": 3.13
+    },
+    "Last seconds. Three, two, one.": {
+      "file": "e2b9781cd5470d83.mp3",
+      "duration": 2.9
+    },
+    "Leg swings. Stand on one leg and hold the support. Swing the free leg forward and back like a pendulum, controlled, letting the range grow a little. We switch legs halfway.": {
+      "file": "a23c7207440231ab.mp3",
+      "duration": 12.1
+    },
+    "March in place. March in place, easy and relaxed. Let your arms swing and find your breathing. This gently raises your temperature and wakes up your hips.": {
+      "file": "73a4aa77f9ec9ba3.mp3",
+      "duration": 10.5
+    },
+    "Next pause: Almost there. In three, two, one.": {
+      "file": "a77d07f50e4287c8.mp3",
+      "duration": 3.7
+    },
+    "Next pause: Catch your breath. In three, two, one.": {
+      "file": "c6d36aa2a1b44142.mp3",
+      "duration": 4
+    },
+    "Next pause: Find a wall. In three, two, one.": {
+      "file": "2a2af39cf330652f.mp3",
+      "duration": 3.88
+    },
+    "Next pause: Find support. In three, two, one.": {
+      "file": "dbc18008f2fbd242.mp3",
+      "duration": 3.92
+    },
+    "Next pause: Last one. In three, two, one.": {
+      "file": "db071d21887a3b9f.mp3",
+      "duration": 3.65
+    },
+    "Next pause: Reset. In three, two, one.": {
+      "file": "4cb0a0a0469a6bfd.mp3",
+      "duration": 3.6
+    },
+    "Next pause: Roll your shoulders. In three, two, one.": {
+      "file": "b6108bd5b1fbc16a.mp3",
+      "duration": 3.98
+    },
+    "Next pause: Shake it out. In three, two, one.": {
+      "file": "4a272bd3299ce26a.mp3",
+      "duration": 3.73
+    },
+    "Next pause: Sit up tall. In three, two, one.": {
+      "file": "7e7cf456d924113d.mp3",
+      "duration": 3.77
+    },
+    "Next pause: Stay by the wall. In three, two, one.": {
+      "file": "a4b0a8abf50ec0c9.mp3",
+      "duration": 3.95
+    },
+    "Next pause: Stay lying down. In three, two, one.": {
+      "file": "30d43e444371bf2e.mp3",
+      "duration": 4.22
+    },
+    "Next pause: Stay where you are. In three, two, one.": {
+      "file": "0f7b5bff8f071e17.mp3",
+      "duration": 3.7
+    },
+    "Next pause: Take it to the floor. In three, two, one.": {
+      "file": "7b2de36f3094edfb.mp3",
+      "duration": 4
+    },
+    "Next pause: Two to go. In three, two, one.": {
+      "file": "063c092bce05150a.mp3",
+      "duration": 3.63
+    },
+    "Next up: Arm circles. In three, two, one.": {
+      "file": "d09b8504e0e214ed.mp3",
+      "duration": 3.63
+    },
+    "Next up: Butt kicks. In three, two, one.": {
+      "file": "e8d3dbd7f7a24bed.mp3",
+      "duration": 3.58
+    },
+    "Next up: Butterfly stretch. In three, two, one.": {
+      "file": "037ccaf31bda0396.mp3",
+      "duration": 4.05
+    },
+    "Next up: Calf stretch. In three, two, one.": {
+      "file": "0695d910b580c285.mp3",
+      "duration": 3.65
+    },
+    "Next up: Deep calf stretch. In three, two, one.": {
+      "file": "518fa78c30648b99.mp3",
+      "duration": 3.98
+    },
+    "Next up: Figure-four stretch. In three, two, one.": {
+      "file": "dfd4bf7f69b9d186.mp3",
+      "duration": 4.08
+    },
+    "Next up: Hamstring stretch. In three, two, one.": {
+      "file": "08cf388720698bf8.mp3",
+      "duration": 3.98
+    },
+    "Next up: High knees. In three, two, one.": {
+      "file": "bc585ba72768ee76.mp3",
+      "duration": 3.55
+    },
+    "Next up: Hip circles. In three, two, one.": {
+      "file": "44495866b68a472e.mp3",
+      "duration": 3.67
+    },
+    "Next up: Hip flexor stretch. In three, two, one.": {
+      "file": "f89af4786afd7ce9.mp3",
+      "duration": 4.05
+    },
+    "Next up: Leg swings. In three, two, one.": {
+      "file": "c253ccb24f0a1f21.mp3",
+      "duration": 3.65
+    },
+    "Next up: March in place. In three, two, one.": {
+      "file": "fcb2585093fed80e.mp3",
+      "duration": 3.88
+    },
+    "Next up: Quad stretch. In three, two, one.": {
+      "file": "e25de73bc3b4205f.mp3",
+      "duration": 3.83
+    },
+    "Next up: Reverse lunges. In three, two, one.": {
+      "file": "79b67193bf03dbe1.mp3",
+      "duration": 4.05
+    },
+    "Next up: Side leg swings. In three, two, one.": {
+      "file": "9a10b1ea87f3f6f7.mp3",
+      "duration": 4.17
+    },
+    "Next up: Squats. In three, two, one.": {
+      "file": "dc0aa9f23f16d456.mp3",
+      "duration": 3.42
+    },
+    "Next up: Walk it off. In three, two, one.": {
+      "file": "7e387c7bd7627686.mp3",
+      "duration": 3.5
+    },
+    "Other direction.": {
+      "file": "c515c628f7403f8b.mp3",
+      "duration": 1.73
+    },
+    "Quad stretch. Balance on one leg, using the wall if you need it. Grab the other ankle and draw the heel toward your glute, knees together, hips square. About thirty seconds each side.": {
+      "file": "fa925c529ebbbd94.mp3",
+      "duration": 12.13
+    },
+    "Reset. Feet hip-width apart. Roll your shoulders back and breathe.": {
+      "file": "89b8334cbf03215f.mp3",
+      "duration": 4.75
+    },
+    "Resuming. Almost there.": {
+      "file": "439a8bf951a45a10.mp3",
+      "duration": 2.48
+    },
+    "Resuming. Arm circles.": {
+      "file": "dfdf4fba986156e2.mp3",
+      "duration": 2.6
+    },
+    "Resuming. Butt kicks.": {
+      "file": "ea400e463e39385c.mp3",
+      "duration": 2.3
+    },
+    "Resuming. Butterfly stretch.": {
+      "file": "954904a702520b5c.mp3",
+      "duration": 2.88
+    },
+    "Resuming. Calf stretch.": {
+      "file": "ff026923377b33fa.mp3",
+      "duration": 2.4
+    },
+    "Resuming. Catch your breath.": {
+      "file": "23f7b5b54a3a80ec.mp3",
+      "duration": 2.5
+    },
+    "Resuming. Deep calf stretch.": {
+      "file": "51e61d063100c0d5.mp3",
+      "duration": 2.7
+    },
+    "Resuming. Figure-four stretch.": {
+      "file": "ff074ae9759173bb.mp3",
+      "duration": 2.77
+    },
+    "Resuming. Find a wall.": {
+      "file": "c6bc2be0130cd4ec.mp3",
+      "duration": 2.45
+    },
+    "Resuming. Find support.": {
+      "file": "45201f5488da1104.mp3",
+      "duration": 2.52
+    },
+    "Resuming. Get ready.": {
+      "file": "7a13753058e42958.mp3",
+      "duration": 2.23
+    },
+    "Resuming. Hamstring stretch.": {
+      "file": "52ec627ec87fa35d.mp3",
+      "duration": 2.73
+    },
+    "Resuming. High knees.": {
+      "file": "86b995b02621de89.mp3",
+      "duration": 2.42
+    },
+    "Resuming. Hip circles.": {
+      "file": "258191eeddfb2ff2.mp3",
+      "duration": 2.42
+    },
+    "Resuming. Hip flexor stretch.": {
+      "file": "d9ed0fb9ad8e5e30.mp3",
+      "duration": 2.75
+    },
+    "Resuming. Last one.": {
+      "file": "992ac86385959f81.mp3",
+      "duration": 2.45
+    },
+    "Resuming. Leg swings.": {
+      "file": "f294d6b6bd74de3b.mp3",
+      "duration": 2.58
+    },
+    "Resuming. March in place.": {
+      "file": "337adf370bbeba40.mp3",
+      "duration": 2.65
+    },
+    "Resuming. Quad stretch.": {
+      "file": "fba757e0d29285b9.mp3",
+      "duration": 2.5
+    },
+    "Resuming. Reset.": {
+      "file": "f8a7226ed635d1d0.mp3",
+      "duration": 2.2
+    },
+    "Resuming. Reverse lunges.": {
+      "file": "90170f778ef6e12e.mp3",
+      "duration": 2.75
+    },
+    "Resuming. Roll your shoulders.": {
+      "file": "8890b30a365c7458.mp3",
+      "duration": 2.67
+    },
+    "Resuming. Shake it out.": {
+      "file": "d222b1e1e77d50e5.mp3",
+      "duration": 2.33
+    },
+    "Resuming. Side leg swings.": {
+      "file": "c87cf13b10512357.mp3",
+      "duration": 2.88
+    },
+    "Resuming. Sit up tall.": {
+      "file": "e6cce935f498b8e0.mp3",
+      "duration": 2.42
+    },
+    "Resuming. Squats.": {
+      "file": "282e044a0464ddac.mp3",
+      "duration": 2.17
+    },
+    "Resuming. Stay by the wall.": {
+      "file": "7beb83228db01a76.mp3",
+      "duration": 2.67
+    },
+    "Resuming. Stay lying down.": {
+      "file": "d63ce23562483bc8.mp3",
+      "duration": 2.9
+    },
+    "Resuming. Stay where you are.": {
+      "file": "9893951a7f561057.mp3",
+      "duration": 2.55
+    },
+    "Resuming. Take it to the floor.": {
+      "file": "6eb47087bd2b11df.mp3",
+      "duration": 2.7
+    },
+    "Resuming. Two to go.": {
+      "file": "9af2fe0d1f917029.mp3",
+      "duration": 2.4
+    },
+    "Resuming. Walk it off.": {
+      "file": "b2b9400a6d397820.mp3",
+      "duration": 2.35
+    },
+    "Reverse direction.": {
+      "file": "60e96d6949788053.mp3",
+      "duration": 1.9
+    },
+    "Reverse lunges. Step one leg back and lower until both knees are bent about ninety degrees, front knee over your ankle. Push back up to standing and alternate legs at a steady, controlled pace.": {
+      "file": "d57218a5dfb73b0e.mp3",
+      "duration": 13.53
+    },
+    "Roll your shoulders. Stand tall and roll the shoulders back a few times.": {
+      "file": "506fb6e1d6fa9346.mp3",
+      "duration": 5.1
+    },
+    "Shake it out. Loosen your shoulders and give your arms a good shake.": {
+      "file": "1191472bfc7bbf1a.mp3",
+      "duration": 4.5
+    },
+    "Side leg swings. Keep your hands on the wall and a slight forward lean. Swing one leg across your body and out to the side, sweeping a bigger arc each time. We switch halfway.": {
+      "file": "4c89fc2d8246ed7a.mp3",
+      "duration": 11.72
+    },
+    "Sit up tall. Come up to a seated position, back straight.": {
+      "file": "d376026407041673.mp3",
+      "duration": 4
+    },
+    "Squats. Feet shoulder-width apart. Sit back and down like you're reaching for a chair, chest up, knees over your toes. Rise and repeat at an easy pace.": {
+      "file": "06feea094420e394.mp3",
+      "duration": 10.7
+    },
+    "Stay by the wall. Turn to face the wall, both hands on it.": {
+      "file": "ae599fe90ffe4bc7.mp3",
+      "duration": 4.2
+    },
+    "Stay lying down. Keep the back long against the ground.": {
+      "file": "f4e8be9b4c93772f.mp3",
+      "duration": 4.05
+    },
+    "Stay where you are. Get comfortable on your back for the next one.": {
+      "file": "2767b13aaf6447ef.mp3",
+      "duration": 4.2
+    },
+    "Switch legs.": {
+      "file": "2d60fc3db0e0ac7e.mp3",
+      "duration": 1.68
+    },
+    "Switch sides.": {
+      "file": "39d55cbaabf21a0a.mp3",
+      "duration": 1.73
+    },
+    "Take it to the floor. Find a spot to get down on the ground, or stay standing if you prefer.": {
+      "file": "af9938c51a5afae3.mp3",
+      "duration": 6.35
+    },
+    "Two to go. Quick feet now. Light and bouncy.": {
+      "file": "bc678f2c4d2c40ab.mp3",
+      "duration": 3.63
+    },
+    "Walk it off. Keep walking at an easy pace and let your heart rate drift down. Roll the shoulders and breathe deep — never come to a dead stop after a run.": {
+      "file": "f90d880b0fc9c6a8.mp3",
+      "duration": 10.32
+    }
+  }
+}

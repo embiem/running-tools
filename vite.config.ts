@@ -21,7 +21,9 @@ export default defineConfig({
     },
 
     workbox: {
-      globPatterns: ['**/*.{js,css,html,svg,png,ico}'],
+      // mp3: the guided-workout narration clips (src/assets/narration), so
+      // the workouts run offline without having been played online first.
+      globPatterns: ['**/*.{js,css,html,svg,png,ico,mp3}'],
       cleanupOutdatedCaches: true,
       clientsClaim: true,
     },

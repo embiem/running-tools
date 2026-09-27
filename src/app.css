@@ -105,6 +105,11 @@ h1 {
 }
 
 #app {
+  /* This shell is a body-level flex item, so its auto min-size is its
+     content's min-content; a child with a definite width (e.g. the workouts
+     tool's 34rem) would then force horizontal overflow on narrow screens
+     instead of shrinking. */
+  min-width: 0;
   max-width: 1280px;
   margin: 0 auto;
   padding: 2rem;
