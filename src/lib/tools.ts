@@ -47,6 +47,13 @@ export const TOOLS: Tool[] = [
     description: 'A narrated warm-up and post-run stretch with a spoken coach.',
     icon: 'headphones',
   },
+  {
+    route: '/youtube-workouts',
+    name: 'YouTube Workouts',
+    short: 'Videos',
+    description: 'Hand-picked follow-along warm-ups, runner’s yoga and strength sessions.',
+    icon: 'video',
+  },
 ]
 
 export function getTool(route: string): Tool {
