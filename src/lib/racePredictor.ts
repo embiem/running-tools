@@ -41,10 +41,14 @@
  * what the race result makes the runner fit for, not what they intend to run.
  *
  * Everything below is metres and seconds; paces are per kilometre and the UI
- * converts to the runner's unit for display.
+ * converts to the runner's unit for display. Labels and flag wording come from
+ * the message catalog (messages/{locale}.json) in the current language.
  */
 
 import type { Flag } from './flags'
+import type { Message } from './i18n.svelte'
+import { formatFixed, formatPercent } from './format'
+import { m } from '../paraglide/messages.js'
 
 const METERS_PER_MILE = 1609.344
 const SECONDS_PER_HOUR = 3600
@@ -164,59 +168,59 @@ export interface RaceResult {
   flags: Flag[]
 }
 
-export const DISTANCES: Record<DistanceId, { label: string; meters: number | null }> = {
-  '5k': { label: '5 km', meters: 5000 },
-  '10k': { label: '10 km', meters: 10_000 },
-  '10mi': { label: '10 miles', meters: 16_093.44 },
-  hm: { label: 'Half marathon', meters: 21_097.5 },
-  marathon: { label: 'Marathon', meters: 42_195 },
-  custom: { label: 'Custom distance', meters: null },
+export const DISTANCES: Record<DistanceId, { label: Message; meters: number | null }> = {
+  '5k': { label: m.distance_5k, meters: 5000 },
+  '10k': { label: m.distance_10k, meters: 10_000 },
+  '10mi': { label: m.distance_10mi, meters: 16_093.44 },
+  hm: { label: m.distance_hm, meters: 21_097.5 },
+  marathon: { label: m.distance_marathon, meters: 42_195 },
+  custom: { label: m.distance_custom, meters: null },
 }
 
 interface Zone {
   id: TrainingPaceId
-  label: string
+  label: Message
   slowPct: number
   fastPct: number
-  note: string
+  note: Message
 }
 
 /** Daniels' training intensities, easiest first (see the module header). */
 const ZONES: Zone[] = [
   {
     id: 'easy',
-    label: 'Easy / long',
+    label: m.race_zone_easy,
     slowPct: 0.59,
     fastPct: 0.74,
-    note: 'Conversational — the bulk of your week.',
+    note: m.race_zone_easy_note,
   },
   {
     id: 'marathon',
-    label: 'Marathon',
+    label: m.race_zone_marathon,
     slowPct: 0.75,
     fastPct: 0.84,
-    note: 'Goal marathon pace; comfortably hard for hours.',
+    note: m.race_zone_marathon_note,
   },
   {
     id: 'threshold',
-    label: 'Threshold',
+    label: m.race_zone_threshold,
     slowPct: 0.83,
     fastPct: 0.88,
-    note: 'Comfortably hard, roughly a one-hour effort.',
+    note: m.race_zone_threshold_note,
   },
   {
     id: 'interval',
-    label: 'Interval',
+    label: m.race_zone_interval,
     slowPct: 0.97,
     fastPct: 1,
-    note: '3–5 minute reps at VO₂max; hard but repeatable.',
+    note: m.race_zone_interval_note,
   },
   {
     id: 'rep',
-    label: 'Repetition',
+    label: m.race_zone_rep,
     slowPct: 1.05,
     fastPct: 1.1,
-    note: 'Short fast reps for speed and economy; full recovery.',
+    note: m.race_zone_rep_note,
   },
 ]
 
@@ -317,10 +321,10 @@ export function formatPaceRange(slowSecPerKm: number, fastSecPerKm: number, unit
   return `${formatPaceClock(slowSecPerKm, unit)}–${formatPaceClock(fastSecPerKm, unit)} /${unit}`
 }
 
-/** Distance in the runner's unit, e.g. "21.1 km", "13.1 mi". */
+/** Distance in the runner's unit, e.g. "21.1 km", "13.1 mi" ("21,1 km" in German). */
 export function formatDistance(meters: number, unit: Unit): string {
   const value = unit === 'km' ? meters / 1000 : meters / METERS_PER_MILE
-  return `${value.toFixed(1).replace(/\.0$/, '')} ${unit}`
+  return `${formatFixed(value, 1).replace(/[.,]0$/, '')} ${unit}`
 }
 
 function isDistanceId(value: unknown): value is DistanceId {
@@ -517,7 +521,7 @@ function buildEquivalents(
   raceSeconds: number,
   vdot: number,
 ): RaceEquivalent[] {
-  return (Object.entries(DISTANCES) as [DistanceId, { label: string; meters: number | null }][])
+  return (Object.entries(DISTANCES) as [DistanceId, { label: Message; meters: number | null }][])
     .filter(([, preset]) => preset.meters !== null)
     .map(([id, preset]) => {
       const meters = preset.meters as number
@@ -528,7 +532,7 @@ function buildEquivalents(
       const daniels = prediction(secondsForDistance(meters, vdot), meters)
       return {
         id,
-        label: preset.label,
+        label: preset.label(),
         meters,
         riegel,
         daniels,
@@ -540,11 +544,14 @@ function buildEquivalents(
 function buildTrainingPaces(vdot: number): TrainingPace[] {
   return ZONES.map((zone) => ({
     id: zone.id,
-    label: zone.label,
+    label: zone.label(),
     slowSecPerKm: (1000 / speedAtFraction(vdot, zone.slowPct)) * 60,
     fastSecPerKm: (1000 / speedAtFraction(vdot, zone.fastPct)) * 60,
-    pctBand: `${Math.round(zone.slowPct * 100)}–${Math.round(zone.fastPct * 100)}% VDOT`,
-    note: zone.note,
+    pctBand: m.race_zone_band({
+      from: Math.round(zone.slowPct * 100),
+      to: formatPercent(Math.round(zone.fastPct * 100)),
+    }),
+    note: zone.note(),
   }))
 }
 
@@ -584,12 +591,12 @@ function buildFlags(ctx: FlagContext): Flag[] {
   if (sinceRace < 0) {
     flags.push({
       level: 'info',
-      message: 'That race date is in the future — a prediction needs a result you have already run.',
+      message: m.race_flag_future(),
     })
   } else if (sinceRace > STALE_RACE_DAYS) {
     flags.push({
       level: 'info',
-      message: `That result is ${Math.round(sinceRace / 7)} weeks old. Treat the prediction as an upper bound: fitness decays when training drops, and the models assume you are as fit today as you were then.`,
+      message: m.race_flag_stale({ weeks: Math.round(sinceRace / 7) }),
     })
   }
 
@@ -597,35 +604,43 @@ function buildFlags(ctx: FlagContext): Flag[] {
   if (ratio > EXTRAPOLATION_RATIO || ratio < 1 / EXTRAPOLATION_RATIO) {
     flags.push({
       level: 'info',
-      message: `${formatDistance(goalMeters, input.unit)} is more than ${EXTRAPOLATION_RATIO}× away from ${formatDistance(raceMeters, input.unit)}. Predictions degrade that far out — Riegel flatters a long race predicted from a short one, because it ignores the fuelling and durability that decide it.`,
+      message: m.race_flag_extrapolation({
+        goal: formatDistance(goalMeters, input.unit),
+        ratio: EXTRAPOLATION_RATIO,
+        race: formatDistance(raceMeters, input.unit),
+      }),
     })
   }
 
   if (vdot < PLAUSIBLE_VDOT_MIN || vdot > PLAUSIBLE_VDOT_MAX) {
     flags.push({
       level: 'warn',
-      message: `A VDOT of ${vdot.toFixed(1)} is outside the plausible ${PLAUSIBLE_VDOT_MIN}–${PLAUSIBLE_VDOT_MAX} band — check the distance and the time you entered.`,
+      message: m.race_flag_implausible({
+        vdot: formatFixed(vdot, 1),
+        min: PLAUSIBLE_VDOT_MIN,
+        max: PLAUSIBLE_VDOT_MAX,
+      }),
     })
   }
 
   if (Math.min(raceMeters, goalMeters) < SHORT_RACE_METERS) {
     flags.push({
       level: 'info',
-      message: `Under ${formatDistance(SHORT_RACE_METERS, input.unit)} the Riegel exponent is a poor fit — it was derived from longer races, where fatigue rather than raw speed sets the time.`,
+      message: m.race_flag_short({ distance: formatDistance(SHORT_RACE_METERS, input.unit) }),
     })
   }
 
   if (Math.max(raceMeters, goalMeters) > ULTRA_METERS) {
     flags.push({
       level: 'info',
-      message: `Beyond ${formatDistance(ULTRA_METERS, input.unit)} aerobic fitness stops being the limiter: fuelling, terrain and time on feet decide the result, and neither model knows about them.`,
+      message: m.race_flag_ultra({ distance: formatDistance(ULTRA_METERS, input.unit) }),
     })
   }
 
   if (deltaPct > MODEL_SPREAD_PCT) {
     flags.push({
       level: 'info',
-      message: `The two models disagree by ${deltaPct.toFixed(1)}% at that distance. Read the prediction as a range between them rather than a target time.`,
+      message: m.race_flag_spread({ spread: formatPercent(deltaPct, 1) }),
     })
   }
 
@@ -633,15 +648,26 @@ function buildFlags(ctx: FlagContext): Flag[] {
     if (goalMeters > raceMeters && goalPaceSecPerKm < racePaceSecPerKm) {
       flags.push({
         level: 'warn',
-        message: `The goal pace (${formatPace(goalPaceSecPerKm, input.unit)}) is faster than your ${formatDistance(raceMeters, input.unit)} pace (${formatPace(racePaceSecPerKm, input.unit)}) over a longer race — that is a time to re-check, not a target.`,
+        message: m.race_flag_goal_faster_than_race({
+          goalPace: formatPace(goalPaceSecPerKm, input.unit),
+          race: formatDistance(raceMeters, input.unit),
+          racePace: formatPace(racePaceSecPerKm, input.unit),
+        }),
       })
     }
     const divergencePct = (Math.abs(goalPaceSecPerKm - predictedGoalPaceSecPerKm) / predictedGoalPaceSecPerKm) * 100
     if (divergencePct > PLAN_PACE_DIVERGENCE_PCT) {
-      const slower = goalPaceSecPerKm > predictedGoalPaceSecPerKm
+      const divergence = {
+        percent: formatPercent(Math.round(divergencePct)),
+        goal: formatDistance(goalMeters, input.unit),
+        predictedPace: formatPace(predictedGoalPaceSecPerKm, input.unit),
+      }
       flags.push({
         level: 'info',
-        message: `Your goal pace is ${Math.round(divergencePct)}% ${slower ? 'slower' : 'faster'} than the models predict for ${formatDistance(goalMeters, input.unit)} (${formatPace(predictedGoalPaceSecPerKm, input.unit)}). The training paces above still come from your race fitness, not from this pace.`,
+        message:
+          goalPaceSecPerKm > predictedGoalPaceSecPerKm
+            ? m.race_flag_goal_slower(divergence)
+            : m.race_flag_goal_faster(divergence),
       })
     }
   }

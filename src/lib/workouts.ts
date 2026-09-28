@@ -16,34 +16,41 @@
  *   soleus — the deep muscle doing most of the push-off work in running.
  *
  * What is layout (ours): the exact drill list, durations and the 1–3 sentence
- * descriptions below, chosen to land both sessions inside a 5–10 minute
- * window. Descriptions are written to be spoken verbatim and are regular
- * data, reused outside this UI.
+ * descriptions, chosen to land both sessions inside a 5–10 minute window.
+ * Titles, step names and descriptions are shown on screen, so they live in the
+ * message catalog (messages/{locale}.json, keys `workout_*`) and read in the
+ * app's language; descriptions are written to be spoken verbatim.
  *
- * Narration is pre-rendered: `cues` and
- * `narrationLines` below define every sentence the player can say, and
- * `npm run narrate` (scripts/generate-narration.mjs) renders exactly those
- * strings to MP3 with Kokoro-82M. The player looks each clip up by its text,
- * so any wording change here needs a re-run of `npm run narrate`.
+ * Narration is pre-rendered and English only: `cues` and `narrationLines`
+ * below define every sentence the player can say — built from the English
+ * step names and descriptions whatever the app's language, plus the
+ * speech-only `halfwayCue`s — and `npm run narrate`
+ * (scripts/generate-narration.mjs) renders exactly those strings to MP3 with
+ * Kokoro-82M. The player looks each clip up by its text, so any change to the
+ * English wording (here or in messages/en.json) needs a re-run of
+ * `npm run narrate`.
  */
+
+import type { Message } from './i18n.svelte'
+import { m } from '../paraglide/messages.js'
 
 export type WorkoutId = 'warm-up' | 'stretch'
 export type StepKind = 'exercise' | 'pause'
 
 export interface WorkoutStep {
   kind: StepKind
-  name: string
-  /** Conversational how-to, 1–3 sentences. Spoken verbatim in the narration clips; reused later — keep as data. */
-  description: string
+  name: Message
+  /** Conversational how-to, 1–3 sentences. Spoken verbatim (in English) in the narration clips; reused later — keep as data. */
+  description: Message
   durationSec: number
-  /** Spoken once at 50% elapsed (bilateral drills: "Switch sides."). */
+  /** Spoken once at 50% elapsed (bilateral drills: "Switch sides."). Speech only, so English only. */
   halfwayCue?: string
 }
 
 export interface Workout {
   id: WorkoutId
-  title: string
-  blurb: string
+  title: Message
+  blurb: Message
   /** Always starts with a short 'Get ready' pause. */
   steps: WorkoutStep[]
 }
@@ -51,239 +58,222 @@ export interface Workout {
 export const WORKOUTS: Workout[] = [
   {
     id: 'warm-up',
-    title: 'Warm-up',
-    blurb: 'Dynamic drills to switch your legs on before you run',
+    title: m.workout_warmup_title,
+    blurb: m.workout_warmup_blurb,
     steps: [
       {
         kind: 'pause',
-        name: 'Get ready',
-        description: 'Find a little space and stand tall. We start in fifteen seconds.',
+        name: m.workout_warmup_get_ready_name,
+        description: m.workout_warmup_get_ready_text,
         durationSec: 15,
       },
       {
         kind: 'exercise',
-        name: 'March in place',
-        description:
-          'March in place, easy and relaxed. Let your arms swing and find your breathing. This gently raises your temperature and wakes up your hips.',
+        name: m.workout_warmup_march_name,
+        description: m.workout_warmup_march_text,
         durationSec: 40,
       },
       {
         kind: 'pause',
-        name: 'Shake it out',
-        description: 'Loosen your shoulders and give your arms a good shake.',
+        name: m.workout_warmup_shake_out_name,
+        description: m.workout_warmup_shake_out_text,
         durationSec: 10,
       },
       {
         kind: 'exercise',
-        name: 'Arm circles',
-        description:
-          "Stretch your arms out to the sides. Circle them forward, starting small and growing bigger. I'll tell you when to reverse.",
+        name: m.workout_warmup_arm_circles_name,
+        description: m.workout_warmup_arm_circles_text,
         durationSec: 30,
         halfwayCue: 'Reverse direction.',
       },
       {
         kind: 'pause',
-        name: 'Reset',
-        description: 'Feet hip-width apart. Roll your shoulders back and breathe.',
+        name: m.workout_warmup_reset_name,
+        description: m.workout_warmup_reset_text,
         durationSec: 10,
       },
       {
         kind: 'exercise',
-        name: 'Hip circles',
-        description:
-          "Hands on hips. Circle your hips round like you're stirring a big pot. Start small and keep it smooth.",
+        name: m.workout_warmup_hip_circles_name,
+        description: m.workout_warmup_hip_circles_text,
         durationSec: 30,
         halfwayCue: 'Other direction.',
       },
       {
         kind: 'pause',
-        name: 'Find support',
-        description: 'Move next to a wall, a post, anything you can hold on to.',
+        name: m.workout_warmup_find_support_name,
+        description: m.workout_warmup_find_support_text,
         durationSec: 10,
       },
       {
         kind: 'exercise',
-        name: 'Leg swings',
-        description:
-          'Stand on one leg and hold the support. Swing the free leg forward and back like a pendulum, controlled, letting the range grow a little. We switch legs halfway.',
+        name: m.workout_warmup_leg_swings_name,
+        description: m.workout_warmup_leg_swings_text,
         durationSec: 45,
         halfwayCue: 'Switch legs.',
       },
       {
         kind: 'pause',
-        name: 'Stay by the wall',
-        description: 'Turn to face the wall, both hands on it.',
+        name: m.workout_warmup_stay_by_wall_name,
+        description: m.workout_warmup_stay_by_wall_text,
         durationSec: 10,
       },
       {
         kind: 'exercise',
-        name: 'Side leg swings',
-        description:
-          'Keep your hands on the wall and a slight forward lean. Swing one leg across your body and out to the side, sweeping a bigger arc each time. We switch halfway.',
+        name: m.workout_warmup_side_leg_swings_name,
+        description: m.workout_warmup_side_leg_swings_text,
         durationSec: 40,
         halfwayCue: 'Switch legs.',
       },
       {
         kind: 'pause',
-        name: 'Catch your breath',
-        description: 'Shake out your legs.',
+        name: m.workout_warmup_catch_breath_name,
+        description: m.workout_warmup_catch_breath_text,
         durationSec: 10,
       },
       {
         kind: 'exercise',
-        name: 'Squats',
-        description:
-          "Feet shoulder-width apart. Sit back and down like you're reaching for a chair, chest up, knees over your toes. Rise and repeat at an easy pace.",
+        name: m.workout_warmup_squats_name,
+        description: m.workout_warmup_squats_text,
         durationSec: 40,
       },
       {
         kind: 'pause',
-        name: 'Almost there',
-        description: 'Stand tall. Strong and controlled on the next one.',
+        name: m.workout_warmup_almost_there_name,
+        description: m.workout_warmup_almost_there_text,
         durationSec: 10,
       },
       {
         kind: 'exercise',
-        name: 'Reverse lunges',
-        description:
-          'Step one leg back and lower until both knees are bent about ninety degrees, front knee over your ankle. Push back up to standing and alternate legs at a steady, controlled pace.',
+        name: m.workout_warmup_reverse_lunges_name,
+        description: m.workout_warmup_reverse_lunges_text,
         durationSec: 45,
       },
       {
         kind: 'pause',
-        name: 'Two to go',
-        description: 'Quick feet now. Light and bouncy.',
+        name: m.workout_warmup_two_to_go_name,
+        description: m.workout_warmup_two_to_go_text,
         durationSec: 10,
       },
       {
         kind: 'exercise',
-        name: 'High knees',
-        description:
-          'Jog in place, driving your knees up to hip height. Land softly on the balls of your feet, quick but relaxed.',
+        name: m.workout_warmup_high_knees_name,
+        description: m.workout_warmup_high_knees_text,
         durationSec: 30,
       },
       {
         kind: 'pause',
-        name: 'Last one',
-        description: 'Nearly there. Finish light.',
+        name: m.workout_warmup_last_one_name,
+        description: m.workout_warmup_last_one_text,
         durationSec: 10,
       },
       {
         kind: 'exercise',
-        name: 'Butt kicks',
-        description:
-          'Jog in place again, this time kicking your heels up toward your glutes. Stay quick and light, and let the arms swing.',
+        name: m.workout_warmup_butt_kicks_name,
+        description: m.workout_warmup_butt_kicks_text,
         durationSec: 30,
       },
     ],
   },
   {
     id: 'stretch',
-    title: 'Stretch',
-    blurb: 'Static holds to unwind after your run',
+    title: m.workout_stretch_title,
+    blurb: m.workout_stretch_blurb,
     steps: [
       {
         kind: 'pause',
-        name: 'Get ready',
-        description: 'Let your breathing settle. Easy does it, we take it slow.',
+        name: m.workout_stretch_get_ready_name,
+        description: m.workout_stretch_get_ready_text,
         durationSec: 15,
       },
       {
         kind: 'exercise',
-        name: 'Walk it off',
-        description:
-          'Keep walking at an easy pace and let your heart rate drift down. Roll the shoulders and breathe deep — never come to a dead stop after a run.',
+        name: m.workout_stretch_walk_it_off_name,
+        description: m.workout_stretch_walk_it_off_text,
         durationSec: 45,
       },
       {
         kind: 'pause',
-        name: 'Find a wall',
-        description: 'Move somewhere with a wall, rail or post to lean on.',
+        name: m.workout_stretch_find_wall_name,
+        description: m.workout_stretch_find_wall_text,
         durationSec: 10,
       },
       {
         kind: 'exercise',
-        name: 'Calf stretch',
-        description:
-          'Step one foot back, keep that leg straight and the heel pressed down, front knee bent. Lean gently in until you feel the big calf muscle lengthen. About thirty seconds each side.',
+        name: m.workout_stretch_calf_name,
+        description: m.workout_stretch_calf_text,
         durationSec: 60,
         halfwayCue: 'Switch sides.',
       },
       {
         kind: 'exercise',
-        name: 'Deep calf stretch',
-        description:
-          'Stay in the same stance, but bend the back knee while keeping the heel down. This reaches the deep calf, the workhorse that pushes you off every step. About twenty-five seconds each side.',
+        name: m.workout_stretch_deep_calf_name,
+        description: m.workout_stretch_deep_calf_text,
         durationSec: 50,
         halfwayCue: 'Switch sides.',
       },
       {
         kind: 'pause',
-        name: 'Roll your shoulders',
-        description: 'Stand tall and roll the shoulders back a few times.',
+        name: m.workout_stretch_roll_shoulders_name,
+        description: m.workout_stretch_roll_shoulders_text,
         durationSec: 10,
       },
       {
         kind: 'exercise',
-        name: 'Quad stretch',
-        description:
-          'Balance on one leg, using the wall if you need it. Grab the other ankle and draw the heel toward your glute, knees together, hips square. About thirty seconds each side.',
+        name: m.workout_stretch_quad_name,
+        description: m.workout_stretch_quad_text,
         durationSec: 60,
         halfwayCue: 'Switch sides.',
       },
       {
         kind: 'pause',
-        name: 'Take it to the floor',
-        description: 'Find a spot to get down on the ground, or stay standing if you prefer.',
+        name: m.workout_stretch_to_the_floor_name,
+        description: m.workout_stretch_to_the_floor_text,
         durationSec: 10,
       },
       {
         kind: 'exercise',
-        name: 'Hip flexor stretch',
-        description:
-          'Half-kneel with one foot forward and the back knee down. Tuck the tailbone under and shift the hips gently forward until you feel the front of the hip open. About thirty seconds each side.',
+        name: m.workout_stretch_hip_flexor_name,
+        description: m.workout_stretch_hip_flexor_text,
         durationSec: 60,
         halfwayCue: 'Switch sides.',
       },
       {
         kind: 'pause',
-        name: 'Stay where you are',
-        description: 'Get comfortable on your back for the next one.',
+        name: m.workout_stretch_stay_where_you_are_name,
+        description: m.workout_stretch_stay_where_you_are_text,
         durationSec: 10,
       },
       {
         kind: 'exercise',
-        name: 'Hamstring stretch',
-        description:
-          'Lie on your back and raise one leg, holding it behind the thigh with a soft knee. Draw it toward you until you feel the hamstring lengthen. Keep the other leg bent. About thirty seconds each side.',
+        name: m.workout_stretch_hamstring_name,
+        description: m.workout_stretch_hamstring_text,
         durationSec: 60,
         halfwayCue: 'Switch sides.',
       },
       {
         kind: 'pause',
-        name: 'Stay lying down',
-        description: 'Keep the back long against the ground.',
+        name: m.workout_stretch_stay_lying_down_name,
+        description: m.workout_stretch_stay_lying_down_text,
         durationSec: 10,
       },
       {
         kind: 'exercise',
-        name: 'Figure-four stretch',
-        description:
-          'Still on your back: cross one ankle over the opposite knee, then pull that thigh toward your chest until you feel the glute. Head and shoulders stay down. About thirty seconds each side.',
+        name: m.workout_stretch_figure_four_name,
+        description: m.workout_stretch_figure_four_text,
         durationSec: 60,
         halfwayCue: 'Switch sides.',
       },
       {
         kind: 'pause',
-        name: 'Sit up tall',
-        description: 'Come up to a seated position, back straight.',
+        name: m.workout_stretch_sit_up_tall_name,
+        description: m.workout_stretch_sit_up_tall_text,
         durationSec: 10,
       },
       {
         kind: 'exercise',
-        name: 'Butterfly stretch',
-        description:
-          'Sit tall with the soles of your feet together and knees dropped out. Hold your ankles and lean forward from the hips with a long, flat back. Breathe into it.',
+        name: m.workout_stretch_butterfly_name,
+        description: m.workout_stretch_butterfly_text,
         durationSec: 50,
       },
     ],
@@ -300,17 +290,21 @@ export function totalDurationSec(w: Workout): number {
   return w.steps.reduce((sum, step) => sum + step.durationSec, 0)
 }
 
+/** The narration speaks English whatever the app's language: the clips are English. */
+const SPOKEN = { locale: 'en' } as const
+const spokenName = (step: WorkoutStep): string => step.name({}, SPOKEN)
+
 /** Every sentence the player speaks, built from the step data. */
 export const cues = {
   /** Step start: name plus how-to. */
-  announce: (step: WorkoutStep): string => `${step.name}. ${step.description}`,
+  announce: (step: WorkoutStep): string => `${spokenName(step)}. ${step.description({}, SPOKEN)}`,
   /** Resuming a paused step: name only. */
-  resume: (step: WorkoutStep): string => `Resuming. ${step.name}.`,
+  resume: (step: WorkoutStep): string => `Resuming. ${spokenName(step)}.`,
   /** Three seconds before a step ends; `next` is undefined on the last step. */
   countdown: (next: WorkoutStep | undefined): string => {
     if (!next) return 'Last seconds. Three, two, one.'
-    if (next.kind === 'pause') return `Next pause: ${next.name}. In three, two, one.`
-    return `Next up: ${next.name}. In three, two, one.`
+    if (next.kind === 'pause') return `Next pause: ${spokenName(next)}. In three, two, one.`
+    return `Next up: ${spokenName(next)}. In three, two, one.`
   },
   done: 'Done. Nice work!',
 }

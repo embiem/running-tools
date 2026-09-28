@@ -3,6 +3,7 @@
   import { TOOLS } from '../lib/tools'
   import { YOUTUBE_WORKOUTS } from '../lib/youtubeWorkouts'
   import { SPOTS } from '../lib/painMap'
+  import { m } from '../paraglide/messages.js'
 
   // The metronome tile shows the cadence you last set, so the home grid reads
   // like a dashboard rather than a menu. Same key and bounds as Metronome.svelte.
@@ -15,26 +16,25 @@
     }
   }
 
-  // One headline figure per tile, keyed by route.
-  const stats: Record<string, { value: string; unit: string }> = {
-    '/metronome': { value: String(savedCadence()), unit: 'steps/min' },
-    '/race-predictor': { value: '5K–42K', unit: 'two models' },
-    '/taper-planner': { value: '−50%', unit: 'volume, tapered' },
-    '/drink-mix': { value: '3', unit: 'ingredients' },
-    '/workouts': { value: '2', unit: 'narrated sessions' },
-    '/youtube-workouts': { value: String(YOUTUBE_WORKOUTS.length), unit: 'hand-picked videos' },
-    '/pain-map': { value: String(SPOTS.length), unit: 'spots to tap' },
-  }
+  const cadence = savedCadence()
+
+  // One headline figure per tile, keyed by route; derived, so it follows the language.
+  const stats: Record<string, { value: string; unit: string }> = $derived({
+    '/metronome': { value: String(cadence), unit: m.unit_steps_per_min() },
+    '/race-predictor': { value: m.home_stat_race_value(), unit: m.home_stat_race_unit() },
+    '/taper-planner': { value: m.home_stat_taper_value(), unit: m.home_stat_taper_unit() },
+    '/drink-mix': { value: '3', unit: m.home_stat_drink_unit() },
+    '/workouts': { value: '2', unit: m.home_stat_workouts_unit() },
+    '/youtube-workouts': { value: String(YOUTUBE_WORKOUTS.length), unit: m.home_stat_youtube_unit() },
+    '/pain-map': { value: String(SPOTS.length), unit: m.home_stat_pain_unit() },
+  })
 </script>
 
 <main>
   <section class="intro">
-    <p class="eyebrow">Offline-ready · no account · no tracking</p>
-    <h1 class="display">Tools for <span>runners</span></h1>
-    <p class="lede">
-      Small, focused utilities for training and racing. Install it once and the tools keep working
-      without a signal — only the YouTube picks need one.
-    </p>
+    <p class="eyebrow">{m.home_eyebrow()}</p>
+    <h1 class="display">{m.home_title()} <span>{m.home_title_accent()}</span></h1>
+    <p class="lede">{m.home_lede()}</p>
   </section>
 
   <ul class="bento">
@@ -50,8 +50,8 @@
             <span class="unit">{stats[tool.route].unit}</span>
           </p>
           <div>
-            <h2>{tool.name}</h2>
-            <p class="desc">{tool.description}</p>
+            <h2>{tool.name()}</h2>
+            <p class="desc">{tool.description()}</p>
           </div>
         </a>
       </li>
@@ -68,6 +68,8 @@
     margin: 0.75rem 0 0;
     font-size: clamp(3rem, 12vw, 6.5rem);
     text-transform: uppercase;
+    /* Last resort for a translated word longer than a phone is wide. */
+    overflow-wrap: anywhere;
   }
 
   h1 span {

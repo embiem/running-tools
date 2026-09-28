@@ -1,64 +1,66 @@
 import type { IconName } from './Icon.svelte'
+import type { Message } from './i18n.svelte'
+import { m } from '../paraglide/messages.js'
 
 /** One entry per tool: the home grid, the top bar and every tool page header read this. */
 export interface Tool {
   /** Hash route, also the key the app shell matches the current route against. */
   route: string
-  name: string
+  name: Message
   /** Short name for the top-bar nav. */
-  short: string
-  description: string
+  short: Message
+  description: Message
   icon: IconName
 }
 
 export const TOOLS: Tool[] = [
   {
     route: '/metronome',
-    name: 'Cadence Metronome',
-    short: 'Metronome',
-    description: 'Run to the beat: lock your steps per minute to a click.',
+    name: m.tool_metronome_name,
+    short: m.tool_metronome_short,
+    description: m.tool_metronome_description,
     icon: 'metronome',
   },
   {
     route: '/race-predictor',
-    name: 'Race Predictor',
-    short: 'Predictor',
-    description: 'Equivalent race times, a split plan and training paces from one recent result.',
+    name: m.tool_race_predictor_name,
+    short: m.tool_race_predictor_short,
+    description: m.tool_race_predictor_description,
     icon: 'stopwatch',
   },
   {
     route: '/taper-planner',
-    name: 'Taper Planner',
-    short: 'Taper',
-    description: 'Count your taper back from race day, week by week and run by run.',
+    name: m.tool_taper_planner_name,
+    short: m.tool_taper_planner_short,
+    description: m.tool_taper_planner_description,
     icon: 'taper',
   },
   {
     route: '/drink-mix',
-    name: 'Drink Mix Calculator',
-    short: 'Drink mix',
-    description: 'Mix your own run fuel from table salt, sugar and water.',
+    name: m.tool_drink_mix_name,
+    short: m.tool_drink_mix_short,
+    description: m.tool_drink_mix_description,
     icon: 'drop',
   },
   {
     route: '/workouts',
-    name: 'Guided Workouts',
-    short: 'Workouts',
-    description: 'A narrated warm-up and post-run stretch with a spoken coach.',
+    name: m.tool_workouts_name,
+    short: m.tool_workouts_short,
+    description: m.tool_workouts_description,
     icon: 'headphones',
   },
   {
     route: '/youtube-workouts',
-    name: 'YouTube Workouts',
-    short: 'Videos',
-    description: 'Hand-picked follow-along warm-ups, runner’s yoga and strength sessions.',
+    name: m.tool_youtube_workouts_name,
+    short: m.tool_youtube_workouts_short,
+    description: m.tool_youtube_workouts_description,
     icon: 'video',
   },
   {
     route: '/pain-map',
-    name: 'Runner’s Pain Map',
-    short: 'Pain map',
-    description: 'Tap where it hurts to see which running injuries usually cause pain there.',
+    name: m.tool_pain_map_name,
+    short: m.tool_pain_map_short,
+    description: m.tool_pain_map_description,
     icon: 'body',
   },
 ]

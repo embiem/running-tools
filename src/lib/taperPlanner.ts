@@ -47,10 +47,15 @@
  *   keeping the intensity is the part the intervention studies actually test
  *   (Shepley 1992; Mujika 2000), the calendar around it is running practice.
  *
- * Stateless by design: pure functions, constants and types.
+ * Stateless by design: pure functions, constants and types. Labels and flag
+ * wording come from the message catalog (messages/{locale}.json) in the
+ * current language; no date or distance depends on it.
  */
 
 import type { Flag } from './flags'
+import type { Message } from './i18n.svelte'
+import { formatFixed, formatPercent } from './format'
+import { m } from '../paraglide/messages.js'
 
 const METERS_PER_MILE = 1609.344
 const DAYS_PER_WEEK = 7
@@ -138,13 +143,13 @@ export interface TaperResult {
   flags: Flag[]
 }
 
-export const DISTANCES: Record<DistanceId, { label: string; meters: number | null }> = {
-  '5k': { label: '5 km', meters: 5000 },
-  '10k': { label: '10 km', meters: 10_000 },
-  '10mi': { label: '10 miles', meters: 16_093.44 },
-  hm: { label: 'Half marathon', meters: 21_097.5 },
-  marathon: { label: 'Marathon', meters: 42_195 },
-  custom: { label: 'Custom distance', meters: null },
+export const DISTANCES: Record<DistanceId, { label: Message; meters: number | null }> = {
+  '5k': { label: m.distance_5k, meters: 5000 },
+  '10k': { label: m.distance_10k, meters: 10_000 },
+  '10mi': { label: m.distance_10mi, meters: 16_093.44 },
+  hm: { label: m.distance_hm, meters: 21_097.5 },
+  marathon: { label: m.distance_marathon, meters: 42_195 },
+  custom: { label: m.distance_custom, meters: null },
 }
 
 /** Taper length defaults: the longer races get the longer taper. */
@@ -159,13 +164,13 @@ export const DEFAULT_TAPER_WEEKS: Record<DistanceId, TaperWeeks> = {
 
 export const TAPER_WEEKS_OPTIONS: TaperWeeks[] = [2, 3]
 
-export const SESSION_LABELS: Record<SessionKind, string> = {
-  race: 'Race',
-  long: 'Long run',
-  quality: 'Race-pace sharpener',
-  strides: 'Easy + strides',
-  easy: 'Easy',
-  rest: 'Rest',
+export const SESSION_LABELS: Record<SessionKind, Message> = {
+  race: m.taper_session_race,
+  long: m.taper_session_long,
+  quality: m.taper_session_quality,
+  strides: m.taper_session_strides,
+  easy: m.taper_session_easy,
+  rest: m.taper_session_rest,
 }
 
 /**
@@ -228,10 +233,10 @@ function nextSundayAtLeast(fromISO: string, days: number): string {
   return addDays(fromISO, days + ((DAYS_PER_WEEK - weekday) % DAYS_PER_WEEK))
 }
 
-/** Distance in the runner's unit, e.g. "42.2 km", "13.1 mi". */
+/** Distance in the runner's unit, e.g. "42.2 km", "13.1 mi" ("42,2 km" in German). */
 export function formatDistance(meters: number, unit: Unit): string {
   const value = unit === 'km' ? meters / 1000 : meters / METERS_PER_MILE
-  return `${value.toFixed(1).replace(/\.0$/, '')} ${unit}`
+  return `${formatFixed(value, 1).replace(/[.,]0$/, '')} ${unit}`
 }
 
 /** Convert a distance between the two units — a no-op when they already match. */
@@ -518,7 +523,7 @@ function buildWeek(index: number, ctx: WeekContext): TaperWeek {
 
   return {
     index,
-    label: raceWeek ? 'Race week' : `${ctx.taperWeeks - index + 1} weeks out`,
+    label: raceWeek ? m.taper_race_week() : m.taper_weeks_out({ weeks: ctx.taperWeeks - index + 1 }),
     startDate: addDays(ctx.raceDate, -weekStart),
     endDate: addDays(ctx.raceDate, -(weekStart - (DAYS_PER_WEEK - 1))),
     trainingMeters,
@@ -559,47 +564,53 @@ export function predictTaper(input: TaperInput, today: string = todayISO()): Tap
   if (i.raceDate < today) {
     flags.push({
       level: 'warn',
-      message: 'This race date is in the past — pick an upcoming race for a schedule you can run.',
+      message: m.taper_flag_past(),
     })
   } else if (taperStartDate < today) {
     flags.push({
       level: 'info',
-      message: `The taper is already under way: today is day ${daysBetween(taperStartDate, today) + 1} of ${taperDays}. Earlier days are shown for reference.`,
+      message: m.taper_flag_under_way({ day: daysBetween(taperStartDate, today) + 1, days: taperDays }),
     })
   }
   if (raceMeters > normalWeeklyMeters) {
     flags.push({
       level: 'warn',
-      message: `Your race (${formatDistance(raceMeters, i.unit)}) is longer than your normal training week (${formatDistance(normalWeeklyMeters, i.unit)}). A taper makes you fresh, not fit — the volume has to be there first.`,
+      message: m.taper_flag_race_longer_than_week({
+        race: formatDistance(raceMeters, i.unit),
+        week: formatDistance(normalWeeklyMeters, i.unit),
+      }),
     })
   }
   if (normalWeeklyMeters < LOW_VOLUME_METERS) {
     flags.push({
       level: 'info',
-      message: `Under ${formatDistance(LOW_VOLUME_METERS, i.unit)} a week there is little volume to shed: keep the taper short and change nothing else.`,
+      message: m.taper_flag_low_volume({ distance: formatDistance(LOW_VOLUME_METERS, i.unit) }),
     })
   }
   if (i.taperWeeks === 3 && normalWeeklyMeters < LONG_TAPER_VOLUME_METERS) {
     flags.push({
       level: 'info',
-      message: `Three weeks is a long taper at ${formatDistance(normalWeeklyMeters, i.unit)} a week. Two weeks is the meta-analysis optimum; three suits a high-volume marathon block.`,
+      message: m.taper_flag_long_taper({ week: formatDistance(normalWeeklyMeters, i.unit) }),
     })
   }
   if (i.taperWeeks === 3 && (i.distance === '5k' || i.distance === '10k')) {
     flags.push({
       level: 'info',
-      message: 'Short races are usually tapered for one to two weeks; three weeks can leave you feeling stale.',
+      message: m.taper_flag_short_race(),
     })
   }
   if (totalReductionPct > 60) {
     flags.push({
       level: 'info',
-      message: `The day layout cuts ${totalReductionPct}% of your normal volume, deeper than the 41–60% the literature favours, because ${i.runsPerWeek} runs a week cannot absorb the planned days. Add a run day to hold more.`,
+      message: m.taper_flag_cut_too_deep({
+        percent: formatPercent(totalReductionPct),
+        runs: i.runsPerWeek,
+      }),
     })
   } else if (totalReductionPct < 41) {
     flags.push({
       level: 'info',
-      message: `The schedule cuts ${totalReductionPct}% of your normal volume, less than the 41–60% band. Drop a run or shorten the easy days if you want a deeper taper.`,
+      message: m.taper_flag_cut_too_shallow({ percent: formatPercent(totalReductionPct) }),
     })
   }
 

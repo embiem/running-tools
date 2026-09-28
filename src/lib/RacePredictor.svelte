@@ -14,6 +14,9 @@
     predictRace,
   } from './racePredictor'
   import type { DistanceId, RaceInput, Unit } from './racePredictor'
+  import type { Message } from './i18n.svelte'
+  import { formatFixed, formatPercent } from './format'
+  import { m } from '../paraglide/messages.js'
 
   const STORAGE_KEY = 'racePredictor.input'
 
@@ -27,7 +30,7 @@
 
   const distanceEntries = Object.entries(DISTANCES) as [
     DistanceId,
-    { label: string; meters: number | null },
+    { label: Message; meters: number | null },
   ][]
 
   let input = $state<RaceInput>(loadInput())
@@ -79,29 +82,26 @@
   }
 </script>
 
-<section class="tool split" aria-label="Race predictor">
+<section class="tool split" aria-label={m.race_label()}>
   <div class="inputs">
-    <Panel
-      title="Your recent race"
-      hint="What you have actually run — the fitness every number below comes from."
-    >
+    <Panel title={m.race_recent_title()} hint={m.race_recent_hint()}>
       <div class="fields">
         <label>
           <span class="label-text">
-            Race date
-            <span class="hint">The models assume you are as fit today as you were then.</span>
+            {m.race_date()}
+            <span class="hint">{m.race_date_hint()}</span>
           </span>
           <span class="label-input">
-            <input type="date" bind:value={input.raceDate} aria-label="Date of your recent race" />
+            <input type="date" bind:value={input.raceDate} aria-label={m.race_date_label()} />
           </span>
         </label>
 
         <label>
-          <span class="label-text">Distance</span>
+          <span class="label-text">{m.common_distance()}</span>
           <span class="label-input">
-            <select bind:value={input.distance} aria-label="Race distance">
+            <select bind:value={input.distance} aria-label={m.common_race_distance()}>
               {#each distanceEntries as [id, preset] (id)}
-                <option value={id}>{preset.label}</option>
+                <option value={id}>{preset.label()}</option>
               {/each}
             </select>
           </span>
@@ -109,7 +109,7 @@
 
         {#if effective.distance === 'custom'}
           <label>
-            <span class="label-text">Custom distance</span>
+            <span class="label-text">{m.distance_custom()}</span>
             <span class="label-input">
               <input
                 type="number"
@@ -117,7 +117,7 @@
                 max={LIMITS.customMeters.max}
                 step={LIMITS.customMeters.step}
                 bind:value={input.customMeters}
-                aria-label="Recent race distance in metres"
+                aria-label={m.race_custom_label()}
               />
               <span class="unit">m</span>
             </span>
@@ -126,8 +126,8 @@
 
         <label>
           <span class="label-text">
-            Finish time
-            <span class="hint">mm:ss or h:mm:ss — paste 1:32:00 as it comes.</span>
+            {m.race_time()}
+            <span class="hint">{m.race_time_hint()}</span>
           </span>
           <span class="label-input">
             <input
@@ -135,12 +135,12 @@
               placeholder="20:00"
               bind:value={input.time}
               onblur={tidyTime}
-              aria-label="Your finish time"
+              aria-label={m.race_time_label()}
             />
           </span>
         </label>
 
-        <div class="segmented" role="radiogroup" aria-label="Distance unit">
+        <div class="segmented" role="radiogroup" aria-label={m.common_distance_unit()}>
           <label>
             <input
               type="radio"
@@ -148,7 +148,7 @@
               value="km"
               checked={effective.unit === 'km'}
               onchange={() => setUnit('km')}
-            /> Kilometres
+            /> {m.common_kilometres()}
           </label>
           <label>
             <input
@@ -157,20 +157,20 @@
               value="mi"
               checked={effective.unit === 'mi'}
               onchange={() => setUnit('mi')}
-            /> Miles
+            /> {m.common_miles()}
           </label>
         </div>
       </div>
     </Panel>
 
-    <Panel title="Your goal" hint="The race you are planning — its pace, then its splits below.">
+    <Panel title={m.race_goal_title()} hint={m.race_goal_hint()}>
       <div class="fields">
         <label>
-          <span class="label-text">Distance</span>
+          <span class="label-text">{m.common_distance()}</span>
           <span class="label-input">
-            <select bind:value={input.goalDistance} aria-label="Goal race distance">
+            <select bind:value={input.goalDistance} aria-label={m.race_goal_distance_label()}>
               {#each distanceEntries as [id, preset] (id)}
-                <option value={id}>{preset.label}</option>
+                <option value={id}>{preset.label()}</option>
               {/each}
             </select>
           </span>
@@ -178,7 +178,7 @@
 
         {#if effective.goalDistance === 'custom'}
           <label>
-            <span class="label-text">Custom distance</span>
+            <span class="label-text">{m.distance_custom()}</span>
             <span class="label-input">
               <input
                 type="number"
@@ -186,7 +186,7 @@
                 max={LIMITS.goalCustomMeters.max}
                 step={LIMITS.goalCustomMeters.step}
                 bind:value={input.goalCustomMeters}
-                aria-label="Goal race distance in metres"
+                aria-label={m.race_goal_custom_label()}
               />
               <span class="unit">m</span>
             </span>
@@ -196,11 +196,9 @@
         <div class="field">
           <label for="goal-pace">
             <span class="label-text">
-              Goal pace
+              {m.race_goal_pace()}
               <span class="hint">
-                {result.goalPaceIsCustom
-                  ? 'Your own pace. Use the predicted one to go back to the models.'
-                  : 'From your recent race — edit it to plan a different effort.'}
+                {result.goalPaceIsCustom ? m.race_goal_pace_hint_custom() : m.race_goal_pace_hint()}
               </span>
             </span>
           </label>
@@ -216,7 +214,7 @@
               }}
               onfocus={() => (paceFocused = true)}
               onblur={() => (paceFocused = false)}
-              aria-label="Goal pace per {effective.unit}"
+              aria-label={m.race_goal_pace_label({ unit: effective.unit })}
             />
             <span class="unit">/{effective.unit}</span>
             {#if result.goalPaceIsCustom}
@@ -224,13 +222,13 @@
                 type="button"
                 class="link"
                 onclick={() => (input.goalPaceSecPerKm = null)}
-                aria-label="Use the predicted goal pace"
-              >↺ predicted</button>
+                aria-label={m.race_goal_pace_reset_label()}
+              >{m.race_goal_pace_reset()}</button>
             {/if}
           </span>
         </div>
 
-        <div class="segmented" role="radiogroup" aria-label="Split strategy">
+        <div class="segmented" role="radiogroup" aria-label={m.race_split_group()}>
           <label>
             <input
               type="radio"
@@ -238,7 +236,7 @@
               value="even"
               checked={effective.split === 'even'}
               onchange={() => (input.split = 'even')}
-            /> Even splits
+            /> {m.race_split_even()}
           </label>
           <label>
             <input
@@ -247,42 +245,42 @@
               value="negative"
               checked={effective.split === 'negative'}
               onchange={() => (input.split = 'negative')}
-            /> Negative split
+            /> {m.race_split_negative()}
           </label>
         </div>
       </div>
     </Panel>
 
-    <button type="button" class="ghost reset" onclick={reset}>Reset to defaults</button>
+    <button type="button" class="ghost reset" onclick={reset}>{m.common_reset()}</button>
   </div>
 
   <div class="results">
-    <h2>Your race</h2>
+    <h2>{m.race_result_title()}</h2>
     <div class="stats">
       <div class="stat hero">
-        <span class="eyebrow">{goal.label} · {result.goalPaceIsCustom ? 'your plan' : 'predicted'}</span>
+        <span class="eyebrow">{goal.label()} · {result.goalPaceIsCustom ? m.race_your_plan() : m.race_predicted_tag()}</span>
         <span class="stat-value">{formatDuration(result.goalSeconds)}</span>
         <span class="stat-sub">{formatPace(result.goalPaceSecPerKm, effective.unit)}</span>
       </div>
       <div class="stat">
         <span class="eyebrow">VDOT</span>
-        <span class="stat-value">{result.vdot.toFixed(1)}</span>
-        <span class="stat-sub">the fitness score your result implies</span>
+        <span class="stat-value">{formatFixed(result.vdot, 1)}</span>
+        <span class="stat-sub">{m.race_vdot_sub()}</span>
       </div>
   </div>
   <dl>
-    <dt>Result</dt>
+    <dt>{m.race_result()}</dt>
     <dd>
       {formatDistance(result.raceMeters, effective.unit)} · {formatDuration(result.raceSeconds)} ·
       {formatPace(result.racePaceSecPerKm, effective.unit)}
     </dd>
-    <dt>Goal</dt>
+    <dt>{m.race_goal()}</dt>
     <dd>
-      {goal.label}{effective.goalDistance === 'custom'
+      {goal.label()}{effective.goalDistance === 'custom'
         ? ` · ${formatDistance(result.goalMeters, effective.unit)}`
         : ''}
     </dd>
-    <dt>Predicted</dt>
+    <dt>{m.race_predicted()}</dt>
     <dd>
       {formatDuration(result.daniels.seconds)}
       <span class="muted">
@@ -292,14 +290,14 @@
     </dd>
   </dl>
 
-  <h2>Equivalent performances</h2>
+  <h2>{m.race_equivalents_title()}</h2>
   <table>
     <thead>
       <tr>
-        <th scope="col">Distance</th>
+        <th scope="col">{m.common_distance()}</th>
         <th scope="col">Riegel</th>
         <th scope="col">Daniels</th>
-        <th scope="col">Spread</th>
+        <th scope="col">{m.race_spread()}</th>
       </tr>
     </thead>
     <tbody>
@@ -308,29 +306,29 @@
           <th scope="row">{row.label}</th>
           <td>{formatDuration(row.riegel.seconds)}</td>
           <td>{formatDuration(row.daniels.seconds)}</td>
-          <td>{row.deltaPct.toFixed(1)}%</td>
+          <td>{formatPercent(row.deltaPct, 1)}</td>
         </tr>
       {/each}
     </tbody>
   </table>
 
-  <h2>Your splits</h2>
+  <h2>{m.race_splits_title()}</h2>
   <p class="caption">
-    {goal.label} · {formatDuration(result.goalSeconds)} ·
-    {effective.split === 'negative' ? 'negative split' : 'even splits'}
+    {goal.label()} · {formatDuration(result.goalSeconds)} ·
+    {effective.split === 'negative' ? m.race_split_negative_caption() : m.race_split_even_caption()}
     <span class="muted">
       {result.goalPaceIsCustom
-        ? `at the ${formatPace(result.goalPaceSecPerKm, effective.unit)} you set`
-        : 'at the Daniels prediction, the model the training paces come from'}
+        ? m.race_splits_at_your_pace({ pace: formatPace(result.goalPaceSecPerKm, effective.unit) })
+        : m.race_splits_at_prediction()}
     </span>
   </p>
   <div class="scroll">
     <table>
       <thead>
         <tr>
-          <th scope="col">Split</th>
-          <th scope="col">Time</th>
-          <th scope="col">Cumulative</th>
+          <th scope="col">{m.race_split()}</th>
+          <th scope="col">{m.race_time_column()}</th>
+          <th scope="col">{m.race_cumulative()}</th>
         </tr>
       </thead>
       <tbody>
@@ -345,13 +343,13 @@
     </table>
   </div>
 
-  <h2>Training paces</h2>
+  <h2>{m.race_paces_title()}</h2>
   <table>
     <thead>
       <tr>
-        <th scope="col">Zone</th>
-        <th scope="col">Pace</th>
-        <th scope="col">Purpose</th>
+        <th scope="col">{m.race_zone()}</th>
+        <th scope="col">{m.race_pace()}</th>
+        <th scope="col">{m.race_purpose()}</th>
       </tr>
     </thead>
     <tbody>
@@ -377,46 +375,14 @@
   {/if}
 
   <details class="info">
-    <summary>Where these numbers come from</summary>
-    <p>
-      Two independent models, both fed the same result. <strong>Riegel</strong> (<em>American Scientist</em>,
-      1981) scales a performance by distance with a fatigue exponent: <em>T₂ = T₁ × (D₂/D₁)<sup>1.06</sup></em>.
-      That exponent is a population average — Riegel's own fits to running records span 1.05–1.08, and later
-      work argues no single power law covers every distance — so it is fixed here rather than exposed as a
-      dial.
-    </p>
-    <p>
-      <strong>Daniels &amp; Gilbert's "Oxygen Power"</strong> regressions take the other route: they turn the
-      result into a fitness score, VDOT, by dividing the oxygen cost of the race pace by the fraction of VO₂max
-      sustainable for that long, then solve for the time at another distance. VDOT is also the number behind the
-      training paces below. Across 5 km to the marathon the two models agree within about 1% for a typical
-      result; the spread column is where they disagree, and a spread of more than a few percent is the model
-      saying it is extrapolating.
-    </p>
-    <p>
-      Training paces are Daniels' intensity bands — easy 59–74% of VDOT, marathon 75–84%, threshold 83–88%,
-      interval 97–100%, repetition 105–110% — with the pace at each edge computed by inverting the VO₂
-      regression. The printed pace tables in the book sit at the hard end of those bands for
-      marathon/threshold/interval/repetition, and print a narrower easy range (about 65–74%); the band shown
-      here is the stated intensity range, so its easy end is genuinely easy.
-    </p>
-    <p>
-      The splits are arithmetic on the plan's pace, not physiology. Even splits divide the plan's time by the
-      distance. A negative split ramps the pace linearly so the second half averages 1.5% faster than the first —
-      a plan you can run, rather than a step change at halfway. Splits are one unit each, and the final row
-      absorbs the leftover metres, which is why it can read 1.1 km.
-    </p>
-    <p>
-      The goal pace starts as the models' prediction for that distance and is yours to edit — a slower plan pace
-      is how you build in a margin. Editing it moves the goal time and every split with it; the training paces
-      above do not move, because they describe what your race result makes you fit for rather than what you
-      intend to run.
-    </p>
-    <p>
-      What neither model knows: the weather, the course, the altitude, your fuelling, and whether you have
-      trained for that distance at all. Treat a prediction as a target to aim at, and read the flags above as
-      the places where it is being stretched.
-    </p>
+    <summary>{m.common_sources()}</summary>
+    <!-- Messages are the app's own copy, not user input: safe as HTML. -->
+    <p>{@html m.race_info_riegel()}</p>
+    <p>{@html m.race_info_daniels()}</p>
+    <p>{m.race_info_paces()}</p>
+    <p>{m.race_info_splits()}</p>
+    <p>{m.race_info_goal_pace()}</p>
+    <p>{m.race_info_limits()}</p>
   </details>
   </div>
 </section>

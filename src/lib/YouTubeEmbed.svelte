@@ -1,5 +1,6 @@
 <script lang="ts">
   import Icon from './Icon.svelte'
+  import { m } from '../paraglide/messages.js'
 
   interface Props {
     /** The 11-character YouTube video id. */
@@ -30,7 +31,7 @@
       allowfullscreen
     ></iframe>
   {:else}
-    <button class="facade" aria-label="Play: {title}" onclick={() => (playing = true)}>
+    <button class="facade" aria-label={m.yt_play({ title })} onclick={() => (playing = true)}>
       {#if !thumbFailed}
         <img
           src="https://i.ytimg.com/vi/{id}/hqdefault.jpg"

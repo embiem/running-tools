@@ -2,6 +2,7 @@
   import type { Snippet } from 'svelte'
   import Icon from './Icon.svelte'
   import { getTool } from './tools'
+  import { m } from '../paraglide/messages.js'
 
   interface Props {
     /** The tool's hash route; its name, icon and description come from `TOOLS`. */
@@ -18,12 +19,12 @@
 <!-- Every tool page: back link, icon + condensed title, one-line lede, then the tool. -->
 <main class="page">
   <header class:narrow>
-    <a class="back" href="/#/"><Icon name="back" size={16} /> All tools</a>
+    <a class="back" href="/#/"><Icon name="back" size={16} /> {m.page_back()}</a>
     <div class="title">
       <span class="icon"><Icon name={tool.icon} size={28} /></span>
-      <h1 class="display">{tool.name}</h1>
+      <h1 class="display">{tool.name()}</h1>
     </div>
-    <p class="lede">{tool.description}</p>
+    <p class="lede">{tool.description()}</p>
   </header>
 
   {@render children()}
@@ -83,6 +84,9 @@
     margin: 0;
     font-size: clamp(2.3rem, 8vw, 4rem);
     text-transform: uppercase;
+    /* Last resort for a translated title longer than a phone is wide (the
+       messages put soft hyphens in the long German and Spanish words). */
+    overflow-wrap: anywhere;
   }
 
   .lede {

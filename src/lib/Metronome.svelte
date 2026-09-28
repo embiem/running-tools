@@ -1,5 +1,7 @@
 <script lang="ts">
   import { metronome } from './metronome'
+  import { formatPercent } from './format'
+  import { m } from '../paraglide/messages.js'
 
   const MIN_BPM = 120
   const MAX_BPM = 220
@@ -55,16 +57,16 @@
   }
 </script>
 
-<section class="tool narrow" aria-label="Cadence metronome">
+<section class="tool narrow" aria-label={m.metronome_label()}>
   <div class="dial" class:running>
-    <p class="eyebrow">Cadence</p>
+    <p class="eyebrow">{m.metronome_cadence()}</p>
     <p class="bpm-display">
       <span class="bpm-value display">{bpm}</span>
-      <span class="bpm-unit">steps/min</span>
+      <span class="bpm-unit">{m.unit_steps_per_min()}</span>
     </p>
 
     <div class="controls">
-      <button type="button" class="step" onclick={() => adjust(-STEP)} aria-label="Decrease cadence">
+      <button type="button" class="step" onclick={() => adjust(-STEP)} aria-label={m.metronome_decrease()}>
         −{STEP}
       </button>
       <input
@@ -74,19 +76,19 @@
         step={1}
         bind:value={bpm}
         style:--fill="{((bpm - MIN_BPM) / (MAX_BPM - MIN_BPM)) * 100}%"
-        aria-label="Cadence in steps per minute"
+        aria-label={m.metronome_slider()}
       />
-      <button type="button" class="step" onclick={() => adjust(STEP)} aria-label="Increase cadence">
+      <button type="button" class="step" onclick={() => adjust(STEP)} aria-label={m.metronome_increase()}>
         +{STEP}
       </button>
     </div>
 
     <button type="button" class="toggle" class:primary={!running} onclick={toggle}>
-      {running ? 'Stop' : 'Start'}
+      {running ? m.metronome_stop() : m.metronome_start()}
     </button>
 
     <div class="volume">
-      <label for="click-volume">Volume</label>
+      <label for="click-volume">{m.metronome_volume()}</label>
       <input
         id="click-volume"
         type="range"
@@ -96,23 +98,13 @@
         bind:value={volume}
         style:--fill="{volume * 100}%"
       />
-      <span class="volume-value">{Math.round(volume * 100)}%</span>
+      <span class="volume-value">{formatPercent(Math.round(volume * 100))}</span>
     </div>
   </div>
 
   <details class="info">
-    <summary>Why does cadence matter?</summary>
-    <p>
-      Cadence is your steps per minute. A higher cadence means shorter steps and
-      your foot landing closer under your body. Research shows this reduces
-      overstriding, braking forces, and impact loading at the hip, knee, and
-      ankle, which is linked to lower injury risk. Raising your natural cadence
-      by 5–10% can cut peak knee impact by roughly 20% without costing extra
-      energy. Many runners aim for 170–180 steps/min; studies found cadences at
-      or above 170 associated with fewer overuse injuries. Increase gradually by
-      about 5% at a time and let the metronome set the rhythm while you match
-      each footstrike to a beat.
-    </p>
+    <summary>{m.metronome_info_title()}</summary>
+    <p>{m.metronome_info()}</p>
   </details>
 </section>
 
