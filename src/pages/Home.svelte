@@ -2,6 +2,7 @@
   import Icon from '../lib/Icon.svelte'
   import { TOOLS } from '../lib/tools'
   import { YOUTUBE_WORKOUTS } from '../lib/youtubeWorkouts'
+  import { SPOTS } from '../lib/painMap'
 
   // The metronome tile shows the cadence you last set, so the home grid reads
   // like a dashboard rather than a menu. Same key and bounds as Metronome.svelte.
@@ -22,6 +23,7 @@
     '/drink-mix': { value: '3', unit: 'ingredients' },
     '/workouts': { value: '2', unit: 'narrated sessions' },
     '/youtube-workouts': { value: String(YOUTUBE_WORKOUTS.length), unit: 'hand-picked videos' },
+    '/pain-map': { value: String(SPOTS.length), unit: 'spots to tap' },
   }
 </script>
 
@@ -121,6 +123,16 @@
 
     .bento li:nth-child(n + 4) {
       grid-column: span 2;
+    }
+
+    /* An unfinished last row of thirds: one tile takes the row, two share it. */
+    .bento li:nth-child(3n + 1):nth-child(n + 7):last-child {
+      grid-column: span 6;
+    }
+
+    .bento li:nth-child(3n + 1):nth-child(n + 7):nth-last-child(2),
+    .bento li:nth-child(3n + 2):nth-child(n + 8):last-child {
+      grid-column: span 3;
     }
   }
 

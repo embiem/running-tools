@@ -6,6 +6,7 @@
   import RacePredictorPage from './pages/RacePredictorPage.svelte'
   import WorkoutsPage from './pages/WorkoutsPage.svelte'
   import YouTubeWorkoutsPage from './pages/YouTubeWorkoutsPage.svelte'
+  import PainMapPage from './pages/PainMapPage.svelte'
   import PWABadge from './lib/PWABadge.svelte'
   import Icon from './lib/Icon.svelte'
   import { TOOLS } from './lib/tools'
@@ -20,6 +21,7 @@
     '/race-predictor': RacePredictorPage,
     '/workouts': WorkoutsPage,
     '/youtube-workouts': YouTubeWorkoutsPage,
+    '/pain-map': PainMapPage,
   }
 
   function currentRoute(): keyof typeof routes {
@@ -150,9 +152,29 @@
     background: var(--surface-2);
   }
 
+  /* Icons only until the labels fit; the label stays for screen readers. */
+  nav a span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
   @media (min-width: 52rem) {
     nav {
       display: flex;
+    }
+  }
+
+  @media (min-width: 62rem) {
+    nav a span {
+      position: static;
+      width: auto;
+      height: auto;
+      overflow: visible;
+      clip-path: none;
     }
   }
 </style>

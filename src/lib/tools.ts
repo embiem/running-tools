@@ -54,6 +54,13 @@ export const TOOLS: Tool[] = [
     description: 'Hand-picked follow-along warm-ups, runner’s yoga and strength sessions.',
     icon: 'video',
   },
+  {
+    route: '/pain-map',
+    name: 'Runner’s Pain Map',
+    short: 'Pain map',
+    description: 'Tap where it hurts to see which running injuries usually cause pain there.',
+    icon: 'body',
+  },
 ]
 
 export function getTool(route: string): Tool {
