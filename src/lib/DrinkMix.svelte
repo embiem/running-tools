@@ -66,152 +66,166 @@
   }
 </script>
 
-<section class="tool" aria-label="Drink mix calculator">
-  <Panel
-    title="Your session"
-    hint="Pick the closest fit — the preset sets the carbohydrate and sodium targets the mix is built to hit."
-  >
-    <div class="presets" role="group" aria-label="Session preset">
-      {#each presetEntries as [id, preset] (id)}
-        <button
-          type="button"
-          class:selected={input.preset === id}
-          aria-pressed={input.preset === id}
-          onclick={() => selectPreset(id)}
-        >
-          {preset.label}
-          <span class="preset-tagline">{preset.tagline}</span>
-        </button>
-      {/each}
-    </div>
-    <p class="preset-hint">
-      {presetMeta.carbsGPerH} g carbs/h · {presetMeta.sodiumMgPerH} mg sodium/h
-    </p>
-  </Panel>
-
-  <Panel
-    title="Your setup"
-    hint="What you carry and how much you drink — the mix is sized to that."
-  >
-    <div class="fields">
-      <label>
-        <span class="label-text">Session length</span>
-        <span class="label-input">
-          <input
-            type="number"
-            min={LIMITS.durationMin.min}
-            max={LIMITS.durationMin.max}
-            step={LIMITS.durationMin.step}
-            bind:value={input.durationMin}
-            aria-label="Session length in minutes"
-          />
-          <span class="unit">min</span>
-        </span>
-      </label>
-
-      <label>
-        <span class="label-text">Bottle size</span>
-        <span class="label-input">
-          <input
-            type="number"
-            min={LIMITS.bottleMl.min}
-            max={LIMITS.bottleMl.max}
-            step={LIMITS.bottleMl.step}
-            bind:value={input.bottleMl}
-            aria-label="Bottle size in millilitres"
-          />
-          <span class="unit">ml</span>
-        </span>
-      </label>
-
-      <label>
-        <span class="label-text">Bottles you carry</span>
-        <span class="label-input">
-          <input
-            type="number"
-            min={LIMITS.bottles.min}
-            max={LIMITS.bottles.max}
-            step={LIMITS.bottles.step}
-            bind:value={input.bottles}
-            aria-label="Number of bottles you carry"
-          />
-          <span class="total">= {(result.carryMl / 1000).toFixed(2)} L total</span>
-        </span>
-      </label>
-
-      <label>
-        <span class="label-text">
-          Your fluid intake
-          <span class="hint">
-            Sweat rate is typically 0.5–2.0 L/h, higher in heat and at race pace — weigh yourself
-            before and after a run to find yours.
-          </span>
-        </span>
-        <span class="label-input">
-          <input
-            type="number"
-            min={LIMITS.fluidMlPerHour.min}
-            max={LIMITS.fluidMlPerHour.max}
-            step={LIMITS.fluidMlPerHour.step}
-            bind:value={input.fluidMlPerHour}
-            aria-label="Your fluid intake in millilitres per hour"
-          />
-          <span class="unit">ml/h</span>
-        </span>
-      </label>
-
-      <div class="salt" role="radiogroup" aria-label="Salt you have">
-        <label>
-          <input type="radio" name="saltSetup" value="table" bind:group={input.saltSetup} />
-          Table salt only
-        </label>
-        <label>
-          <input
-            type="radio"
-            name="saltSetup"
-            value="table-potassium"
-            bind:group={input.saltSetup}
-          />
-          Table salt + potassium-rich salt
-        </label>
+<section class="tool split" aria-label="Drink mix calculator">
+  <div class="inputs">
+    <Panel
+      title="Your session"
+      hint="Pick the closest fit — the preset sets the carbohydrate and sodium targets the mix is built to hit."
+    >
+      <div class="presets" role="group" aria-label="Session preset">
+        {#each presetEntries as [id, preset] (id)}
+          <button
+            type="button"
+            class:selected={input.preset === id}
+            aria-pressed={input.preset === id}
+            onclick={() => selectPreset(id)}
+          >
+            {preset.label}
+            <span class="preset-tagline">{preset.tagline}</span>
+          </button>
+        {/each}
       </div>
+      <p class="preset-hint">
+        {presetMeta.carbsGPerH} g carbs/h · {presetMeta.sodiumMgPerH} mg sodium/h
+      </p>
+    </Panel>
 
-      {#if input.saltSetup === 'table-potassium'}
+    <Panel
+      title="Your setup"
+      hint="What you carry and how much you drink — the mix is sized to that."
+    >
+      <div class="fields">
+        <label>
+          <span class="label-text">Session length</span>
+          <span class="label-input">
+            <input
+              type="number"
+              min={LIMITS.durationMin.min}
+              max={LIMITS.durationMin.max}
+              step={LIMITS.durationMin.step}
+              bind:value={input.durationMin}
+              aria-label="Session length in minutes"
+            />
+            <span class="unit">min</span>
+          </span>
+        </label>
+
+        <label>
+          <span class="label-text">Bottle size</span>
+          <span class="label-input">
+            <input
+              type="number"
+              min={LIMITS.bottleMl.min}
+              max={LIMITS.bottleMl.max}
+              step={LIMITS.bottleMl.step}
+              bind:value={input.bottleMl}
+              aria-label="Bottle size in millilitres"
+            />
+            <span class="unit">ml</span>
+          </span>
+        </label>
+
+        <label>
+          <span class="label-text">Bottles you carry</span>
+          <span class="label-input">
+            <input
+              type="number"
+              min={LIMITS.bottles.min}
+              max={LIMITS.bottles.max}
+              step={LIMITS.bottles.step}
+              bind:value={input.bottles}
+              aria-label="Number of bottles you carry"
+            />
+            <span class="total">= {(result.carryMl / 1000).toFixed(2)} L total</span>
+          </span>
+        </label>
+
         <label>
           <span class="label-text">
-            Potassium in that salt
+            Your fluid intake
             <span class="hint">
-              LoSalt ≈ 66 %, many reduced-sodium blends ≈ 30–50 %, your blend 33 %.
+              Sweat rate is typically 0.5–2.0 L/h, higher in heat and at race pace — weigh yourself
+              before and after a run to find yours.
             </span>
           </span>
           <span class="label-input">
             <input
               type="number"
-              min={LIMITS.potassiumPct.min}
-              max={LIMITS.potassiumPct.max}
-              step={LIMITS.potassiumPct.step}
-              bind:value={input.potassiumPct}
-              aria-label="Percentage of potassium chloride in your potassium-rich salt"
+              min={LIMITS.fluidMlPerHour.min}
+              max={LIMITS.fluidMlPerHour.max}
+              step={LIMITS.fluidMlPerHour.step}
+              bind:value={input.fluidMlPerHour}
+              aria-label="Your fluid intake in millilitres per hour"
             />
-            <span class="unit">% KCl</span>
+            <span class="unit">ml/h</span>
           </span>
         </label>
+
+        <div class="segmented stacked" role="radiogroup" aria-label="Salt you have">
+          <label>
+            <input type="radio" name="saltSetup" value="table" bind:group={input.saltSetup} />
+            Table salt only
+          </label>
+          <label>
+            <input
+              type="radio"
+              name="saltSetup"
+              value="table-potassium"
+              bind:group={input.saltSetup}
+            />
+            Table salt + potassium-rich salt
+          </label>
+        </div>
+
+        {#if input.saltSetup === 'table-potassium'}
+          <label>
+            <span class="label-text">
+              Potassium in that salt
+              <span class="hint">
+                LoSalt ≈ 66 %, many reduced-sodium blends ≈ 30–50 %, your blend 33 %.
+              </span>
+            </span>
+            <span class="label-input">
+              <input
+                type="number"
+                min={LIMITS.potassiumPct.min}
+                max={LIMITS.potassiumPct.max}
+                step={LIMITS.potassiumPct.step}
+                bind:value={input.potassiumPct}
+                aria-label="Percentage of potassium chloride in your potassium-rich salt"
+              />
+              <span class="unit">% KCl</span>
+            </span>
+          </label>
+        {/if}
+      </div>
+    </Panel>
+
+    <button type="button" class="ghost reset" onclick={reset}>Reset to defaults</button>
+  </div>
+
+  <div class="results">
+    <h2>The mix for {result.carryMl} ml</h2>
+    <div class="stats">
+      <div class="stat hero">
+        <span class="eyebrow">Sugar</span>
+        <span class="stat-value">{result.sugarG.toFixed(1)}<small>g</small></span>
+        <span class="stat-sub">≈ {result.sugarTsp.toFixed(1)} tsp</span>
+      </div>
+      <div class="stat">
+        <span class="eyebrow">Table salt</span>
+        <span class="stat-value">{result.tableSaltG.toFixed(2)}<small>g</small></span>
+        <span class="stat-sub">≈ {result.tableSaltTsp.toFixed(1)} tsp</span>
+      </div>
+      {#if input.saltSetup === 'table-potassium'}
+        <div class="stat">
+          <span class="eyebrow">Potassium-rich salt</span>
+          <span class="stat-value">{result.potassiumSaltG.toFixed(2)}<small>g</small></span>
+          <span class="stat-sub">≈ {result.potassiumSaltTsp.toFixed(1)} tsp</span>
+        </div>
       {/if}
-    </div>
-  </Panel>
-
-  <button type="button" class="reset" onclick={reset}>Reset to defaults</button>
-
-  <h2>The mix for {result.carryMl} ml</h2>
+  </div>
   <dl>
-    {#if input.saltSetup === 'table-potassium'}
-      <dt>Potassium-rich salt</dt>
-      <dd>{result.potassiumSaltG.toFixed(2)} g (≈ {result.potassiumSaltTsp.toFixed(1)} tsp)</dd>
-    {/if}
-    <dt>Table salt</dt>
-    <dd>{result.tableSaltG.toFixed(2)} g (≈ {result.tableSaltTsp.toFixed(1)} tsp)</dd>
-    <dt>Sugar</dt>
-    <dd>{result.sugarG.toFixed(1)} g (≈ {result.sugarTsp.toFixed(1)} tsp)</dd>
     <dt>Water</dt>
     <dd>{result.carryMl} ml</dd>
     <dt>Per {result.bottleMl} ml bottle</dt>
@@ -317,24 +331,12 @@
       Weigh ingredients on a 0.1 g scale — household teaspoons vary.
     </p>
   </details>
+  </div>
 </section>
 
 <style>
-  .tool {
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    gap: 1rem;
-    width: min(28rem, 100%);
-    margin: 0 auto;
-    text-align: left;
-  }
-
-  h2 {
-    margin: 0.5rem 0 -0.5rem;
-    font-size: 1rem;
-    font-weight: 600;
-    opacity: 0.85;
+  .reset {
+    align-self: flex-start;
   }
 
   .presets {
@@ -346,184 +348,91 @@
     flex: 1;
     min-width: 0;
     overflow-wrap: break-word;
-    padding: 0.5rem;
-    font-size: 0.9rem;
+    padding: 0.7rem 0.5rem;
+    border-radius: var(--radius-sm);
+    background: var(--bg);
+    font-size: 0.92rem;
   }
 
   .presets button.selected {
-    border-color: #646cff;
-    color: #646cff;
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--on-accent);
   }
 
   .preset-tagline {
     display: block;
-    margin-top: 0.25rem;
+    margin-top: 0.2rem;
     font-size: 0.7rem;
-    font-weight: 400;
+    font-weight: 500;
     opacity: 0.7;
   }
 
   .preset-hint {
-    margin: -0.5rem 0 0;
+    margin: -0.25rem 0 0;
     font-size: 0.85rem;
     text-align: center;
-    color: #888;
-  }
-
-  .fields {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-  }
-
-  .fields label {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.5rem;
-  }
-
-  .label-input {
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-    flex: none;
-    margin-left: auto;
-  }
-
-  input[type='number'] {
-    width: 6rem;
-    padding: 0.3rem 0.5rem;
-    border: 1px solid rgba(128, 128, 128, 0.4);
-    border-radius: 6px;
-    background: rgba(128, 128, 128, 0.12);
-    color: inherit;
-    font: inherit;
+    color: var(--muted);
     font-variant-numeric: tabular-nums;
-    text-align: right;
-  }
-
-  .unit,
-  .total {
-    color: #888;
-    font-size: 0.85rem;
   }
 
   .total {
     min-width: 6.5rem;
-  }
-
-  .hint {
-    display: block;
-    font-size: 0.8rem;
-    opacity: 0.7;
-  }
-
-  .salt {
-    display: flex;
-    flex-direction: column;
-    gap: 0.35rem;
-    font-size: 0.9rem;
-  }
-
-  .salt label {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-  }
-
-  input[type='radio'] {
-    accent-color: #646cff;
-  }
-
-  .reset {
-    align-self: flex-start;
+    color: var(--muted);
     font-size: 0.85rem;
-    padding: 0.4em 0.9em;
-  }
-
-  dl {
-    display: grid;
-    grid-template-columns: auto 1fr;
-    gap: 0.35rem 1rem;
-    margin: 0;
-    text-align: left;
-  }
-
-  dt {
-    opacity: 0.75;
-  }
-
-  dd {
-    margin: 0;
-    font-variant-numeric: tabular-nums;
   }
 
   .band {
     display: inline-block;
-    margin-left: 0.35rem;
-    padding: 0.1rem 0.5rem;
+    margin-left: 0.4rem;
+    padding: 0.1rem 0.55rem;
     border-radius: 999px;
-    font-size: 0.75rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    border: 1px solid currentColor;
   }
 
   .band.isotonic {
-    border: 1px solid #3fb950;
-    color: #3fb950;
+    color: var(--ok);
   }
 
   .band.hypotonic {
-    border: 1px solid #888;
-    color: #888;
+    color: var(--muted);
   }
 
   .band.hypertonic {
-    border: 1px solid #f85149;
-    color: #f85149;
+    color: var(--danger);
   }
 
   .schedule {
     margin: 0;
-    padding-left: 1.1rem;
-    font-size: 0.9rem;
-  }
-
-  .schedule li + li {
-    margin-top: 0.35rem;
-  }
-
-  .flags {
-    list-style: none;
-    margin: 0;
     padding: 0;
-    font-size: 0.85rem;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    counter-reset: step;
   }
 
-  .flag {
-    padding: 0.5rem 0.75rem;
-    border-left: 3px solid #888;
-    background: rgba(128, 128, 128, 0.12);
-    margin-bottom: 0.5rem;
-    border-radius: 0 6px 6px 0;
+  .schedule li {
+    display: flex;
+    gap: 0.75rem;
+    align-items: baseline;
+    counter-increment: step;
   }
 
-  .flag.warn {
-    border-left-color: #f85149;
-  }
-
-  .info {
-    font-size: 0.9rem;
-  }
-
-  .info summary {
-    cursor: pointer;
-    color: #646cff;
-    font-weight: 500;
-  }
-
-  .info p {
-    margin: 0.5rem 0 0;
-    opacity: 0.85;
+  .schedule li::before {
+    content: counter(step);
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 50%;
+    background: var(--surface-2);
+    font-size: 0.75rem;
+    font-weight: 700;
   }
 </style>

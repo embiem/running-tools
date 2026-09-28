@@ -1,14 +1,8 @@
 <script lang="ts">
+  import ToolPage from '../lib/ToolPage.svelte'
   import TaperPlanner from '../lib/TaperPlanner.svelte'
 </script>
 
-<main>
-  <h1>Taper Planner</h1>
-
-  <a class="back" href="/#/">← All tools</a>
-
-  <div class="card">
-    <TaperPlanner />
-  </div>
-
-</main>
+<ToolPage route="/taper-planner">
+  <TaperPlanner />
+</ToolPage>

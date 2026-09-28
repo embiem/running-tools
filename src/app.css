@@ -1,11 +1,54 @@
+/*
+  Design system: "performance dark". A near-black base, one volt accent kept
+  for actions, progress and the one number that matters, and oversized
+  condensed numerals for results. Every colour is a token on :root, redefined
+  once for light mode, so components never hard-code a colour.
+*/
+
+/* Archivo, latin subset only: one variable file carries both axes, so body
+   text (wdth 100) and the condensed display numerals (wdth ~75) cost a single
+   ~90 KB request, bundled and precached by the service worker for offline. */
+@font-face {
+  font-family: 'Archivo Variable';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  font-stretch: 62% 125%;
+  src: url('@fontsource-variable/archivo/files/archivo-latin-wdth-normal.woff2')
+    format('woff2-variations');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304,
+    U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  --font: 'Archivo Variable', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+
+  --bg: #0b0b0f;
+  --surface: #15151b;
+  --surface-2: #1e1e26;
+  --border: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.16);
+  --text: #f4f4f6;
+  --muted: #9a9aa6;
+  /* Volt: a fill colour. Text on it is always --on-accent. --accent-text is the
+     same hue made legible as text on --bg (identical in dark, darkened in light). */
+  --accent: #d4ff3a;
+  --accent-text: #d4ff3a;
+  --accent-soft: rgba(212, 255, 58, 0.1);
+  --on-accent: #0b0b0f;
+  --danger: #ff6b5e;
+  --ok: #3ddc97;
+
+  --radius: 18px;
+  --radius-sm: 10px;
+  --shadow: 0 1px 0 rgba(255, 255, 255, 0.04) inset, 0 12px 32px rgba(0, 0, 0, 0.35);
+
+  font-family: var(--font);
   line-height: 1.5;
   font-weight: 400;
-
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  color-scheme: dark;
+  color: var(--text);
+  background-color: var(--bg);
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -13,137 +56,618 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
+@media (prefers-color-scheme: light) {
+  :root {
+    color-scheme: light;
+    --bg: #f4f4ef;
+    --surface: #ffffff;
+    --surface-2: #ebebe4;
+    --border: rgba(11, 11, 15, 0.09);
+    --border-strong: rgba(11, 11, 15, 0.2);
+    --text: #0b0b0f;
+    --muted: #5f5f6b;
+    --accent-text: #4d6b00;
+    --accent-soft: rgba(140, 190, 0, 0.14);
+    --danger: #d93a2b;
+    --ok: #13875a;
+    --shadow: 0 1px 2px rgba(11, 11, 15, 0.05), 0 10px 28px rgba(11, 11, 15, 0.07);
+  }
 }
-a:hover {
-  color: #535bf2;
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
 }
 
 body {
   margin: 0;
-  display: flex;
-  place-items: center;
   min-width: 320px;
   min-height: 100vh;
+  background: var(--bg);
 }
 
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
+/* Every page's content column; the top bar spans the full width above it. */
+.shell {
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: 0 1rem 4rem;
 }
 
-.card {
-  padding: 2em;
-}
-
-.grid {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
-  gap: 1rem;
-  width: 100%;
-}
-
-.grid a.card,
-.grid .placeholder {
-  display: block;
-  color: inherit;
+a {
+  color: var(--accent-text);
   text-decoration: none;
-  border-radius: 12px;
-  overflow: hidden;
-  background: rgba(128, 128, 128, 0.12);
+  font-weight: 500;
+}
+
+a:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent-text);
+  outline-offset: 2px;
+}
+
+/* Condensed display type: page titles and every oversized numeral. */
+.display {
+  font-stretch: 75%;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  line-height: 0.95;
+  font-variant-numeric: tabular-nums;
+}
+
+.eyebrow {
+  margin: 0;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* ---------- Buttons ---------- */
+
+button {
+  font: inherit;
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--text);
+  padding: 0.6em 1.15em;
+  border-radius: 999px;
+  border: 1px solid var(--border-strong);
+  background: var(--surface-2);
+  cursor: pointer;
   transition:
-    transform 0.2s,
-    box-shadow 0.2s;
+    background-color 0.15s,
+    border-color 0.15s,
+    transform 0.1s;
 }
 
-.grid a.card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+button:hover {
+  border-color: var(--text);
 }
 
-.grid img {
-  display: block;
+button:active {
+  transform: scale(0.97);
+}
+
+button.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--on-accent);
+}
+
+button.primary:hover {
+  filter: brightness(1.06);
+  border-color: var(--accent);
+}
+
+button.ghost {
+  background: transparent;
+  border-color: var(--border-strong);
+  color: var(--muted);
+  font-size: 0.85rem;
+  padding: 0.45em 1em;
+}
+
+button.ghost:hover {
+  color: var(--text);
+  border-color: var(--text);
+}
+
+/* ---------- Range sliders ---------- */
+
+input[type='range'] {
+  appearance: none;
+  -webkit-appearance: none;
+  height: 2rem;
+  background: transparent;
+  cursor: pointer;
+  --fill: 50%;
+}
+
+input[type='range']::-webkit-slider-runnable-track {
+  height: 6px;
+  border-radius: 999px;
+  background: linear-gradient(
+    to right,
+    var(--accent) 0 var(--fill),
+    var(--surface-2) var(--fill) 100%
+  );
+}
+
+input[type='range']::-moz-range-track {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--surface-2);
+}
+
+input[type='range']::-moz-range-progress {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--accent);
+}
+
+input[type='range']::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 22px;
+  height: 22px;
+  margin-top: -8px;
+  border-radius: 50%;
+  background: var(--text);
+  border: 4px solid var(--bg);
+  box-shadow: 0 0 0 1px var(--border-strong);
+}
+
+input[type='range']::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--text);
+  border: 4px solid var(--bg);
+  box-shadow: 0 0 0 1px var(--border-strong);
+}
+
+/* ---------- Tool layout ---------- */
+
+/* A tool's root. Narrow: one column. Tools that split inputs from results
+   (.tool.split) get two columns on wide screens, inputs sticky on the left. */
+.tool {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
   width: 100%;
-  aspect-ratio: 16 / 9;
-  object-fit: cover;
-}
-
-.grid .placeholder img {
-  filter: grayscale(0.8) brightness(0.6);
-}
-
-.card-body {
-  padding: 0.75rem 1rem 1rem;
   text-align: left;
 }
 
-.card-body h2 {
-  margin: 0;
-  font-size: 1.1rem;
-}
-
-.card-body p {
-  margin: 0.25rem 0 0;
-  font-size: 0.85rem;
-  opacity: 0.75;
-}
-
-.badge {
-  display: inline-block;
-  margin-top: 0.5rem;
-  padding: 0.1rem 0.6rem;
-  border-radius: 999px;
-  border: 1px solid #646cff;
-  color: #646cff;
-  font-size: 0.75rem;
-}
-
-#app {
-  /* This shell is a body-level flex item, so its auto min-size is its
-     content's min-content; a child with a definite width (e.g. the workouts
-     tool's 34rem) would then force horizontal overflow on narrow screens
-     instead of shrinking. */
+.tool .inputs,
+.tool .results {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
   min-width: 0;
-  max-width: 1280px;
+}
+
+@media (min-width: 60rem) {
+  .tool.split {
+    display: grid;
+    grid-template-columns: minmax(20rem, 26rem) minmax(0, 1fr);
+    gap: 2.5rem;
+    align-items: start;
+  }
+
+  .tool.split .inputs {
+    position: sticky;
+    top: 5rem;
+  }
+}
+
+.tool.narrow {
+  max-width: 36rem;
   margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
 }
 
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
+/* Section headings inside results (panel headings are Panel.svelte's own). */
+.tool .results > h2 {
+  margin: 0.75rem 0 -0.5rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* ---------- Form fields ---------- */
+
+.fields {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.fields > label,
+.fields > .field {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.fields > .field > label {
+  flex: 1 1 auto;
+}
+
+.label-text {
+  font-size: 0.92rem;
   font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
+.label-input {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  flex: none;
+  margin-left: auto;
+}
+
+.tool input[type='number'],
+.tool input[type='text'],
+.tool input[type='date'],
+.tool select {
+  padding: 0.5rem 0.7rem;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+  color: inherit;
+  font: inherit;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  transition: border-color 0.15s;
+}
+
+.tool input[type='number'],
+.tool input[type='text'],
+.tool input[type='date'] {
+  text-align: right;
+}
+
+.tool input[type='number'],
+.tool input[type='text'] {
+  width: 6.5rem;
+}
+
+.tool input:hover,
+.tool select:hover {
+  border-color: var(--muted);
+}
+
+.tool input:focus,
+.tool select:focus {
+  outline: none;
+  border-color: var(--accent-text);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.unit,
+.muted {
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-weight: 400;
+}
+
+.hint {
+  display: block;
+  margin-top: 0.1rem;
+  font-size: 0.8rem;
+  font-weight: 400;
+  color: var(--muted);
+}
+
+/* Radio groups render as a segmented control: the native radio stays in the
+   DOM (keyboard + screen readers) but is visually hidden, and the label is
+   the pill. */
+.segmented {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  padding: 0.25rem;
+  border-radius: 999px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+}
+
+.segmented label {
+  flex: 1 1 auto;
+  position: relative;
+  padding: 0.45rem 0.9rem;
+  border-radius: 999px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  text-align: center;
+  color: var(--muted);
+  cursor: pointer;
+  transition:
+    background-color 0.15s,
+    color 0.15s;
+}
+
+.segmented label:hover {
+  color: var(--text);
+}
+
+.segmented input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.segmented label:has(input:checked) {
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+.segmented label:has(input:focus-visible) {
+  outline: 2px solid var(--accent-text);
+  outline-offset: 2px;
+}
+
+.segmented.stacked {
+  border-radius: var(--radius-sm);
+  flex-direction: column;
+}
+
+.segmented.stacked label {
+  border-radius: calc(var(--radius-sm) - 3px);
+  text-align: left;
+}
+
+/* ---------- Stat tiles: the headline numbers of a result ---------- */
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+  gap: 0.75rem;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 1rem 1.1rem 1.1rem;
+  border-radius: var(--radius);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  min-width: 0;
+}
+
+.stat.hero {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--on-accent);
+}
+
+.stat.hero .eyebrow,
+.stat.hero .stat-sub {
+  color: inherit;
+  opacity: 0.7;
+}
+
+.stat-value {
+  font-size: clamp(2.2rem, 7vw, 3rem);
+  font-stretch: 75%;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
+.stat-value small {
+  margin-left: 0.2rem;
+  font-size: 0.42em;
+  font-weight: 600;
+  font-stretch: 100%;
+  letter-spacing: 0;
+  opacity: 0.7;
+}
+
+.stat-sub {
+  font-size: 0.82rem;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Definition lists and tables ---------- */
+
+.tool dl {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  margin: 0;
+  border-top: 1px solid var(--border);
+}
+
+.tool dt,
+.tool dd {
+  padding: 0.6rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.tool dt {
+  padding-right: 1.25rem;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.tool dd {
+  margin: 0;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+.tool dd .muted {
+  display: block;
+}
+
+.tool table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.92rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.tool th,
+.tool td {
+  padding: 0.55rem 0.6rem;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+
+.tool thead th {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.tool tbody th {
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.tool tbody th .muted {
+  display: block;
+}
+
+.tool th:first-child,
+.tool td:first-child {
+  padding-left: 0;
+}
+
+.tool th:last-child,
+.tool td:last-child {
+  padding-right: 0;
+  text-align: right;
+}
+
+.tool td {
+  font-weight: 500;
+}
+
+/* The highlighted row of a table (goal distance, race day): a volt marker
+   bar and the accent colour, never a background that fights the stripes. */
+.tool tr.highlight th,
+.tool tr.highlight td {
+  color: var(--accent-text);
+  font-weight: 700;
+}
+
+.tool tr.highlight th {
+  box-shadow: inset 3px 0 0 var(--accent);
+  padding-left: 0.7rem;
+}
+
+/* ---------- Advice flags ---------- */
+
+.flags {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  font-size: 0.88rem;
+}
+
+.flag {
+  display: flex;
+  gap: 0.6rem;
+  padding: 0.75rem 0.9rem;
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+
+.flag::before {
+  content: 'i';
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: 50%;
+  font-size: 0.72rem;
+  font-weight: 800;
+  background: var(--surface-2);
+  color: var(--muted);
+}
+
+.flag.warn {
+  border-color: color-mix(in srgb, var(--danger) 45%, transparent);
+  background: color-mix(in srgb, var(--danger) 8%, var(--surface));
+}
+
+.flag.warn::before {
+  content: '!';
+  background: var(--danger);
+  color: var(--bg);
+}
+
+/* ---------- "Where these numbers come from" ---------- */
+
+.info {
+  padding: 0.9rem 1.1rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  font-size: 0.9rem;
+}
+
+.info summary {
+  cursor: pointer;
+  font-weight: 600;
+  list-style: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.info summary::-webkit-details-marker {
+  display: none;
+}
+
+.info summary::after {
+  content: '+';
+  font-size: 1.2rem;
+  line-height: 1;
+  color: var(--accent-text);
+  transition: transform 0.2s;
+}
+
+.info[open] summary::after {
+  transform: rotate(45deg);
+}
+
+.info p {
+  margin: 0.75rem 0 0;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.info p strong,
+.info p em {
+  color: var(--text);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition: none !important;
+    animation: none !important;
   }
 }

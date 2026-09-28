@@ -29,22 +29,24 @@
   .panel {
     display: flex;
     flex-direction: column;
-    gap: 0.6rem;
-    padding: 0.9rem 1rem 1rem;
-    border: 1px solid rgba(128, 128, 128, 0.3);
-    border-radius: 10px;
-    background: rgba(128, 128, 128, 0.07);
+    gap: 0.9rem;
+    padding: 1.1rem 1.15rem 1.2rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    box-shadow: var(--shadow);
   }
 
   h2 {
     margin: 0;
-    font-size: 1rem;
-    font-weight: 600;
+    font-size: 1.05rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
   }
 
   .panel-hint {
-    margin: -0.35rem 0 0;
-    font-size: 0.8rem;
-    opacity: 0.7;
+    margin: -0.6rem 0 0;
+    font-size: 0.82rem;
+    color: var(--muted);
   }
 </style>

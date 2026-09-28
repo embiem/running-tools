@@ -1,75 +1,229 @@
 <script lang="ts">
-  interface Tool {
-    name: string
-    description: string
-    href: string | null
-    image: string
+  import Icon from '../lib/Icon.svelte'
+  import { TOOLS } from '../lib/tools'
+
+  // The metronome tile shows the cadence you last set, so the home grid reads
+  // like a dashboard rather than a menu. Same key and bounds as Metronome.svelte.
+  function savedCadence(): number {
+    try {
+      const saved = Number(localStorage.getItem('metronome.bpm'))
+      return Number.isFinite(saved) && saved >= 120 && saved <= 220 ? saved : 170
+    } catch {
+      return 170
+    }
   }
 
-  // Unsplash CDN URLs (free Unsplash license); params crop to card-size WebP.
-  const img = (id: string) =>
-    `https://images.unsplash.com/${id}?auto=format&fit=crop&w=640&q=60`
-
-  const tools: Tool[] = [
-    {
-      name: 'Cadence Metronome',
-      description: 'Run to the beat — 170 steps/min',
-      href: '/#/metronome',
-      image: img('photo-1552674605-db6ffd4facb5'),
-    },
-    {
-      name: 'Drink Mix Calculator',
-      description: 'Mix your own run fuel from salt and sugar',
-      href: '/#/drink-mix',
-      image: img('photo-1625708458528-802ec79b1ed8'),
-    },
-    {
-      name: 'Race Predictor',
-      description: 'Estimate race times from a recent result',
-      href: '/#/race-predictor',
-      image: img('photo-1571008887538-b36bb32f4571'),
-    },
-    {
-      name: 'Taper Planner',
-      description: 'Count your taper back from race day',
-      href: '/#/taper-planner',
-      image: img('photo-1461896836934-ffe607ba8211'),
-    },
-    {
-      name: 'Guided Workouts',
-      description: 'Narrated warm-up and stretch sessions',
-      href: '/#/workouts',
-      image: img('photo-1518310383802-640c2de311b2'),
-    },
-  ]
+  // One headline figure per tile, keyed by route.
+  const stats: Record<string, { value: string; unit: string }> = {
+    '/metronome': { value: String(savedCadence()), unit: 'steps/min' },
+    '/race-predictor': { value: '5K–42K', unit: 'two models' },
+    '/taper-planner': { value: '−50%', unit: 'volume, tapered' },
+    '/drink-mix': { value: '3', unit: 'ingredients' },
+    '/workouts': { value: '2', unit: 'narrated sessions' },
+  }
 </script>
 
 <main>
-  <h1>running-tools</h1>
-  <p class="tagline">A suite of tools for runners</p>
+  <section class="intro">
+    <p class="eyebrow">Offline-ready · no account · no tracking</p>
+    <h1 class="display">Tools for <span>runners</span></h1>
+    <p class="lede">
+      Small, focused utilities for training and racing. Install it once and every tool keeps working
+      without a signal.
+    </p>
+  </section>
 
-  <ul class="grid">
-    {#each tools as tool (tool.name)}
-      <li>
-        {#if tool.href}
-          <a class="card" href={tool.href}>
-            <img src={tool.image} alt="" loading="lazy" />
-            <div class="card-body">
-              <h2>{tool.name}</h2>
-              <p>{tool.description}</p>
-            </div>
-          </a>
-        {:else}
-          <div class="card placeholder">
-            <img src={tool.image} alt="" loading="lazy" />
-            <div class="card-body">
-              <h2>{tool.name}</h2>
-              <p>{tool.description}</p>
-              <span class="badge">Coming soon</span>
-            </div>
+  <ul class="bento">
+    {#each TOOLS as tool, i (tool.route)}
+      <li class:feature={i === 0}>
+        <a href="/#{tool.route}">
+          <div class="top">
+            <span class="icon"><Icon name={tool.icon} size={22} /></span>
+            <span class="go"><Icon name="arrow" size={20} /></span>
           </div>
-        {/if}
+          <p class="figure">
+            <span class="display">{stats[tool.route].value}</span>
+            <span class="unit">{stats[tool.route].unit}</span>
+          </p>
+          <div>
+            <h2>{tool.name}</h2>
+            <p class="desc">{tool.description}</p>
+          </div>
+        </a>
       </li>
     {/each}
   </ul>
 </main>
+
+<style>
+  .intro {
+    padding: 3rem 0 2.25rem;
+  }
+
+  h1 {
+    margin: 0.75rem 0 0;
+    font-size: clamp(3rem, 12vw, 6.5rem);
+    text-transform: uppercase;
+  }
+
+  h1 span {
+    color: var(--accent-text);
+  }
+
+  .lede {
+    max-width: 34rem;
+    margin: 1rem 0 0;
+    font-size: 1.05rem;
+    color: var(--muted);
+  }
+
+  .bento {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.9rem;
+  }
+
+  @media (min-width: 40rem) {
+    .bento {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .feature {
+      grid-column: span 2;
+    }
+  }
+
+  @media (min-width: 60rem) {
+    .bento {
+      grid-template-columns: repeat(6, 1fr);
+    }
+
+    /* Feature tile left over two rows, two wide tiles beside it, two halves below. */
+    .bento li.feature {
+      grid-column: span 2;
+      grid-row: span 2;
+    }
+
+    .bento li:nth-child(2),
+    .bento li:nth-child(3) {
+      grid-column: span 4;
+    }
+
+    .bento li:nth-child(4),
+    .bento li:nth-child(5) {
+      grid-column: span 3;
+    }
+  }
+
+  a {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 1.5rem;
+    padding: 1.25rem;
+    border-radius: 22px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-weight: 400;
+    transition:
+      transform 0.2s,
+      border-color 0.2s;
+  }
+
+  a:hover {
+    text-decoration: none;
+    transform: translateY(-3px);
+    border-color: var(--border-strong);
+  }
+
+  .top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .icon {
+    display: grid;
+    place-items: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: 12px;
+    background: var(--surface-2);
+  }
+
+  .go {
+    color: var(--muted);
+    transition:
+      transform 0.2s,
+      color 0.2s;
+  }
+
+  a:hover .go {
+    color: var(--accent-text);
+    transform: translate(2px, -2px);
+  }
+
+  .figure {
+    margin: 0;
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .figure .display {
+    font-size: 3rem;
+  }
+
+  .figure .unit {
+    font-size: 0.85rem;
+  }
+
+  h2 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 700;
+  }
+
+  .desc {
+    margin: 0.3rem 0 0;
+    font-size: 0.88rem;
+    color: var(--muted);
+  }
+
+  /* The featured tile is the volt one: big numeral, dark ink. */
+  .feature a {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--on-accent);
+  }
+
+  .feature .icon {
+    background: var(--on-accent);
+    color: var(--accent);
+  }
+
+  .feature .go,
+  .feature .unit,
+  .feature .desc,
+  .feature a:hover .go {
+    color: inherit;
+    opacity: 0.7;
+  }
+
+  .feature .figure .display {
+    font-size: clamp(5rem, 16vw, 8rem);
+  }
+
+  @media (min-width: 60rem) {
+    .feature .figure {
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+  }
+</style>

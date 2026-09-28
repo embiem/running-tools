@@ -79,192 +79,202 @@
   }
 </script>
 
-<section class="tool" aria-label="Race predictor">
-  <Panel
-    title="Your recent race"
-    hint="What you have actually run — the fitness every number below comes from."
-  >
-    <div class="fields">
-      <label>
-        <span class="label-text">
-          Race date
-          <span class="hint">The models assume you are as fit today as you were then.</span>
-        </span>
-        <span class="label-input">
-          <input type="date" bind:value={input.raceDate} aria-label="Date of your recent race" />
-        </span>
-      </label>
-
-      <label>
-        <span class="label-text">Distance</span>
-        <span class="label-input">
-          <select bind:value={input.distance} aria-label="Race distance">
-            {#each distanceEntries as [id, preset] (id)}
-              <option value={id}>{preset.label}</option>
-            {/each}
-          </select>
-        </span>
-      </label>
-
-      {#if effective.distance === 'custom'}
+<section class="tool split" aria-label="Race predictor">
+  <div class="inputs">
+    <Panel
+      title="Your recent race"
+      hint="What you have actually run — the fitness every number below comes from."
+    >
+      <div class="fields">
         <label>
-          <span class="label-text">Custom distance</span>
-          <span class="label-input">
-            <input
-              type="number"
-              min={LIMITS.customMeters.min}
-              max={LIMITS.customMeters.max}
-              step={LIMITS.customMeters.step}
-              bind:value={input.customMeters}
-              aria-label="Recent race distance in metres"
-            />
-            <span class="unit">m</span>
-          </span>
-        </label>
-      {/if}
-
-      <label>
-        <span class="label-text">
-          Finish time
-          <span class="hint">mm:ss or h:mm:ss — paste 1:32:00 as it comes.</span>
-        </span>
-        <span class="label-input">
-          <input
-            type="text"
-            placeholder="20:00"
-            bind:value={input.time}
-            onblur={tidyTime}
-            aria-label="Your finish time"
-          />
-        </span>
-      </label>
-
-      <div class="choice" role="radiogroup" aria-label="Distance unit">
-        <label>
-          <input
-            type="radio"
-            name="unit"
-            value="km"
-            checked={effective.unit === 'km'}
-            onchange={() => setUnit('km')}
-          /> Kilometres
-        </label>
-        <label>
-          <input
-            type="radio"
-            name="unit"
-            value="mi"
-            checked={effective.unit === 'mi'}
-            onchange={() => setUnit('mi')}
-          /> Miles
-        </label>
-      </div>
-    </div>
-  </Panel>
-
-  <Panel title="Your goal" hint="The race you are planning — its pace, then its splits below.">
-    <div class="fields">
-      <label>
-        <span class="label-text">Distance</span>
-        <span class="label-input">
-          <select bind:value={input.goalDistance} aria-label="Goal race distance">
-            {#each distanceEntries as [id, preset] (id)}
-              <option value={id}>{preset.label}</option>
-            {/each}
-          </select>
-        </span>
-      </label>
-
-      {#if effective.goalDistance === 'custom'}
-        <label>
-          <span class="label-text">Custom distance</span>
-          <span class="label-input">
-            <input
-              type="number"
-              min={LIMITS.goalCustomMeters.min}
-              max={LIMITS.goalCustomMeters.max}
-              step={LIMITS.goalCustomMeters.step}
-              bind:value={input.goalCustomMeters}
-              aria-label="Goal race distance in metres"
-            />
-            <span class="unit">m</span>
-          </span>
-        </label>
-      {/if}
-
-      <div class="field">
-        <label for="goal-pace">
           <span class="label-text">
-            Goal pace
-            <span class="hint">
-              {result.goalPaceIsCustom
-                ? 'Your own pace. Use the predicted one to go back to the models.'
-                : 'From your recent race — edit it to plan a different effort.'}
-            </span>
+            Race date
+            <span class="hint">The models assume you are as fit today as you were then.</span>
+          </span>
+          <span class="label-input">
+            <input type="date" bind:value={input.raceDate} aria-label="Date of your recent race" />
           </span>
         </label>
-        <span class="label-input">
-          <input
-            id="goal-pace"
-            type="text"
-            value={paceText}
-            oninput={(event) => {
-              paceText = event.currentTarget.value
-              const parsed = parsePace(paceText, effective.unit)
-              if (parsed !== null) input.goalPaceSecPerKm = parsed
-            }}
-            onfocus={() => (paceFocused = true)}
-            onblur={() => (paceFocused = false)}
-            aria-label="Goal pace per {effective.unit}"
-          />
-          <span class="unit">/{effective.unit}</span>
-          {#if result.goalPaceIsCustom}
-            <button
-              type="button"
-              class="link"
-              onclick={() => (input.goalPaceSecPerKm = null)}
-              aria-label="Use the predicted goal pace"
-            >↺ predicted</button>
-          {/if}
-        </span>
-      </div>
 
-      <div class="choice" role="radiogroup" aria-label="Split strategy">
         <label>
-          <input
-            type="radio"
-            name="split"
-            value="even"
-            checked={effective.split === 'even'}
-            onchange={() => (input.split = 'even')}
-          /> Even splits
+          <span class="label-text">Distance</span>
+          <span class="label-input">
+            <select bind:value={input.distance} aria-label="Race distance">
+              {#each distanceEntries as [id, preset] (id)}
+                <option value={id}>{preset.label}</option>
+              {/each}
+            </select>
+          </span>
         </label>
+
+        {#if effective.distance === 'custom'}
+          <label>
+            <span class="label-text">Custom distance</span>
+            <span class="label-input">
+              <input
+                type="number"
+                min={LIMITS.customMeters.min}
+                max={LIMITS.customMeters.max}
+                step={LIMITS.customMeters.step}
+                bind:value={input.customMeters}
+                aria-label="Recent race distance in metres"
+              />
+              <span class="unit">m</span>
+            </span>
+          </label>
+        {/if}
+
         <label>
-          <input
-            type="radio"
-            name="split"
-            value="negative"
-            checked={effective.split === 'negative'}
-            onchange={() => (input.split = 'negative')}
-          /> Negative split
+          <span class="label-text">
+            Finish time
+            <span class="hint">mm:ss or h:mm:ss — paste 1:32:00 as it comes.</span>
+          </span>
+          <span class="label-input">
+            <input
+              type="text"
+              placeholder="20:00"
+              bind:value={input.time}
+              onblur={tidyTime}
+              aria-label="Your finish time"
+            />
+          </span>
         </label>
+
+        <div class="segmented" role="radiogroup" aria-label="Distance unit">
+          <label>
+            <input
+              type="radio"
+              name="unit"
+              value="km"
+              checked={effective.unit === 'km'}
+              onchange={() => setUnit('km')}
+            /> Kilometres
+          </label>
+          <label>
+            <input
+              type="radio"
+              name="unit"
+              value="mi"
+              checked={effective.unit === 'mi'}
+              onchange={() => setUnit('mi')}
+            /> Miles
+          </label>
+        </div>
       </div>
-    </div>
-  </Panel>
+    </Panel>
 
-  <button type="button" class="reset" onclick={reset}>Reset to defaults</button>
+    <Panel title="Your goal" hint="The race you are planning — its pace, then its splits below.">
+      <div class="fields">
+        <label>
+          <span class="label-text">Distance</span>
+          <span class="label-input">
+            <select bind:value={input.goalDistance} aria-label="Goal race distance">
+              {#each distanceEntries as [id, preset] (id)}
+                <option value={id}>{preset.label}</option>
+              {/each}
+            </select>
+          </span>
+        </label>
 
-  <h2>Your race</h2>
+        {#if effective.goalDistance === 'custom'}
+          <label>
+            <span class="label-text">Custom distance</span>
+            <span class="label-input">
+              <input
+                type="number"
+                min={LIMITS.goalCustomMeters.min}
+                max={LIMITS.goalCustomMeters.max}
+                step={LIMITS.goalCustomMeters.step}
+                bind:value={input.goalCustomMeters}
+                aria-label="Goal race distance in metres"
+              />
+              <span class="unit">m</span>
+            </span>
+          </label>
+        {/if}
+
+        <div class="field">
+          <label for="goal-pace">
+            <span class="label-text">
+              Goal pace
+              <span class="hint">
+                {result.goalPaceIsCustom
+                  ? 'Your own pace. Use the predicted one to go back to the models.'
+                  : 'From your recent race — edit it to plan a different effort.'}
+              </span>
+            </span>
+          </label>
+          <span class="label-input">
+            <input
+              id="goal-pace"
+              type="text"
+              value={paceText}
+              oninput={(event) => {
+                paceText = event.currentTarget.value
+                const parsed = parsePace(paceText, effective.unit)
+                if (parsed !== null) input.goalPaceSecPerKm = parsed
+              }}
+              onfocus={() => (paceFocused = true)}
+              onblur={() => (paceFocused = false)}
+              aria-label="Goal pace per {effective.unit}"
+            />
+            <span class="unit">/{effective.unit}</span>
+            {#if result.goalPaceIsCustom}
+              <button
+                type="button"
+                class="link"
+                onclick={() => (input.goalPaceSecPerKm = null)}
+                aria-label="Use the predicted goal pace"
+              >↺ predicted</button>
+            {/if}
+          </span>
+        </div>
+
+        <div class="segmented" role="radiogroup" aria-label="Split strategy">
+          <label>
+            <input
+              type="radio"
+              name="split"
+              value="even"
+              checked={effective.split === 'even'}
+              onchange={() => (input.split = 'even')}
+            /> Even splits
+          </label>
+          <label>
+            <input
+              type="radio"
+              name="split"
+              value="negative"
+              checked={effective.split === 'negative'}
+              onchange={() => (input.split = 'negative')}
+            /> Negative split
+          </label>
+        </div>
+      </div>
+    </Panel>
+
+    <button type="button" class="ghost reset" onclick={reset}>Reset to defaults</button>
+  </div>
+
+  <div class="results">
+    <h2>Your race</h2>
+    <div class="stats">
+      <div class="stat hero">
+        <span class="eyebrow">{goal.label} · {result.goalPaceIsCustom ? 'your plan' : 'predicted'}</span>
+        <span class="stat-value">{formatDuration(result.goalSeconds)}</span>
+        <span class="stat-sub">{formatPace(result.goalPaceSecPerKm, effective.unit)}</span>
+      </div>
+      <div class="stat">
+        <span class="eyebrow">VDOT</span>
+        <span class="stat-value">{result.vdot.toFixed(1)}</span>
+        <span class="stat-sub">the fitness score your result implies</span>
+      </div>
+  </div>
   <dl>
     <dt>Result</dt>
     <dd>
       {formatDistance(result.raceMeters, effective.unit)} · {formatDuration(result.raceSeconds)} ·
       {formatPace(result.racePaceSecPerKm, effective.unit)}
-    </dd>
-    <dt>VDOT</dt>
-    <dd>
-      {result.vdot.toFixed(1)}
-      <span class="muted">the fitness score that result implies</span>
     </dd>
     <dt>Goal</dt>
     <dd>
@@ -280,15 +290,6 @@
         {formatPace(result.daniels.paceSecPerKm, effective.unit)}
       </span>
     </dd>
-    {#if result.goalPaceIsCustom}
-      <dt>Your plan</dt>
-      <dd>
-        {formatDuration(result.goalSeconds)}
-        <span class="muted">
-          the {formatPace(result.goalPaceSecPerKm, effective.unit)} you set
-        </span>
-      </dd>
-    {/if}
   </dl>
 
   <h2>Equivalent performances</h2>
@@ -303,7 +304,7 @@
     </thead>
     <tbody>
       {#each result.equivalents as row (row.id)}
-        <tr class:goal={row.id === effective.goalDistance}>
+        <tr class:highlight={row.id === effective.goalDistance}>
           <th scope="row">{row.label}</th>
           <td>{formatDuration(row.riegel.seconds)}</td>
           <td>{formatDuration(row.daniels.seconds)}</td>
@@ -417,240 +418,53 @@
       the places where it is being stretched.
     </p>
   </details>
+  </div>
 </section>
 
 <style>
-  .tool {
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    gap: 1rem;
-    width: min(34rem, 100%);
-    margin: 0 auto;
-    text-align: left;
-  }
-
-  h2 {
-    margin: 0.5rem 0 -0.5rem;
-    font-size: 1rem;
-    font-weight: 600;
-    opacity: 0.85;
-  }
-
-  .fields {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-  }
-
-  .fields label,
-  .field {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.5rem;
-  }
-
-  .field label {
-    flex: 1 1 auto;
-  }
-
-  .label-input {
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-    flex: none;
-    margin-left: auto;
-  }
-
-  input[type='number'],
-  input[type='text'],
-  input[type='date'],
-  select {
-    padding: 0.3rem 0.5rem;
-    border: 1px solid rgba(128, 128, 128, 0.4);
-    border-radius: 6px;
-    background: rgba(128, 128, 128, 0.12);
-    color: inherit;
-    font: inherit;
-  }
-
-  input[type='number'],
-  input[type='text'],
-  input[type='date'] {
-    font-variant-numeric: tabular-nums;
-    text-align: right;
-  }
-
-  input[type='number'],
-  input[type='text'] {
-    width: 6rem;
-  }
-
-  input[type='radio'] {
-    accent-color: #646cff;
-  }
-
-  .unit,
-  .muted {
-    color: #888;
-    font-size: 0.85rem;
-  }
-
-  .hint {
-    display: block;
-    font-size: 0.8rem;
-    opacity: 0.7;
-  }
-
-  .choice {
-    display: flex;
-    flex-direction: column;
-    gap: 0.35rem;
-    font-size: 0.9rem;
-  }
-
-  .choice label {
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-    gap: 0.5rem;
-  }
-
   .reset {
     align-self: flex-start;
-    font-size: 0.85rem;
-    padding: 0.4em 0.9em;
   }
 
   .link {
-    padding: 0.2em 0.5em;
+    padding: 0.25em 0.6em;
     font-size: 0.75rem;
-    font-family: inherit;
     background: none;
-    border: 1px solid rgba(128, 128, 128, 0.4);
-    border-radius: 6px;
-    color: #646cff;
-    cursor: pointer;
+    color: var(--accent-text);
     white-space: nowrap;
   }
 
-  .link:hover {
-    border-color: #646cff;
-  }
-
-  dl {
-    display: grid;
-    grid-template-columns: auto 1fr;
-    gap: 0.35rem 1rem;
-    margin: 0;
-    text-align: left;
-  }
-
-  dt {
-    opacity: 0.75;
-  }
-
-  dd {
-    margin: 0;
-    font-variant-numeric: tabular-nums;
-  }
-
-  dd .muted {
-    display: block;
-  }
-
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.9rem;
-    font-variant-numeric: tabular-nums;
-  }
-
   .caption {
-    margin: -0.5rem 0 0;
-    font-size: 0.85rem;
+    margin: -0.25rem 0 0;
+    font-size: 0.9rem;
+    font-weight: 600;
   }
 
   .caption .muted {
     display: block;
   }
 
-  th,
-  td {
-    padding: 0.3rem 0.5rem;
-    text-align: left;
-    border-bottom: 1px solid rgba(128, 128, 128, 0.2);
-  }
-
-  tbody th {
-    font-weight: 400;
-    opacity: 0.85;
-    white-space: nowrap;
-  }
-
-  tbody th .muted {
-    display: block;
-  }
-
-  th:last-child,
-  td:last-child {
-    text-align: right;
-  }
-
-  tr.goal th,
-  tr.goal td {
-    font-weight: 600;
-    color: #646cff;
-  }
-
   tr.finish th,
   tr.finish td {
-    font-weight: 600;
+    font-weight: 700;
   }
 
   .scroll {
-    max-height: 22rem;
+    max-height: 24rem;
     overflow-y: auto;
+    padding-right: 0.25rem;
+  }
+
+  /* Sticky header so a long split table keeps its column labels in view. */
+  .scroll thead th {
+    position: sticky;
+    top: 0;
+    background: var(--bg);
   }
 
   .purpose {
     font-size: 0.8rem;
-    color: #888;
-  }
-
-  .flags {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    font-size: 0.85rem;
-  }
-
-  .flag {
-    padding: 0.5rem 0.75rem;
-    border-left: 3px solid #888;
-    background: rgba(128, 128, 128, 0.12);
-    margin-bottom: 0.5rem;
-    border-radius: 0 6px 6px 0;
-  }
-
-  .flag.warn {
-    border-left-color: #f85149;
-  }
-
-  .info {
-    font-size: 0.9rem;
-  }
-
-  .info summary {
-    cursor: pointer;
-    color: #646cff;
-    font-weight: 500;
-  }
-
-  .info p {
-    margin: 0.5rem 0 0;
-    opacity: 0.85;
+    color: var(--muted);
+    font-weight: 400;
   }
 </style>

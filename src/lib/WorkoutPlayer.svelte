@@ -42,7 +42,11 @@
   })
 
   const workout = $derived<Workout | null>(selected ? getWorkout(selected) : null)
-  const minutes = $derived(workout ? Math.round(totalDurationSec(workout) / 60) : 0)
+  const totalSec = $derived(workout ? totalDurationSec(workout) : 0)
+  const minutes = $derived(Math.round(totalSec / 60))
+  const progressPct = $derived(
+    phase === 'done' ? 100 : totalSec ? Math.min(100, (totalElapsedSec / totalSec) * 100) : 0,
+  )
   const exerciseCount = $derived(
     workout ? workout.steps.filter((s) => s.kind === 'exercise').length : 0,
   )
@@ -103,42 +107,77 @@
   }
 </script>
 
-<section class="tool" aria-label="Guided workouts">
+<section class="tool narrow" aria-label="Guided workouts">
   {#if !selected}
     <Panel title="Choose your session" hint="Two guided workouts with a spoken coach.">
       {#each WORKOUTS as w (w.id)}
         <button
-          class="choice"
+          class="option"
           aria-label={`Choose the ${w.title.toLowerCase()} workout`}
           onclick={() => choose(w.id)}
         >
-          <strong>{w.title}</strong>
-          <span>{w.blurb}</span>
-          <span class="meta">
-            About {Math.round(totalDurationSec(w) / 60)} min ·
-            {w.steps.filter((s) => s.kind === 'exercise').length} exercises
+          <span class="option-text">
+            <strong>{w.title}</strong>
+            <span>{w.blurb}</span>
+            <span class="meta">
+              About {Math.round(totalDurationSec(w) / 60)} min ·
+              {w.steps.filter((s) => s.kind === 'exercise').length} exercises
+            </span>
           </span>
+          <span class="option-go" aria-hidden="true">▶</span>
         </button>
       {/each}
     </Panel>
   {:else}
-    <div class="player">
-      <button class="toggle" aria-label={toggleAria} onclick={toggle}>{toggleLabel}</button>
-      {#if phase !== 'idle'}
-        <button onclick={reset}>Reset</button>
+    <div class="deck" class:live={phase === 'running'}>
+      <p class="eyebrow">{workout?.title ?? ''}</p>
+      <p class="now">
+        {#if phase === 'done'}
+          Session complete
+        {:else if phase !== 'idle' && currentStep}
+          {currentStep.name}
+        {:else}
+          Ready when you are
+        {/if}
+      </p>
+
+      <div class="clocks">
+        <div>
+          <span class="clock display" role="timer">{formatClock(totalElapsedSec)}</span>
+          <span class="clock-label">elapsed</span>
+        </div>
+        {#if phase !== 'idle' && phase !== 'done' && currentStep}
+          <div class="right">
+            <span class="clock display">{formatClock(stepRemainingSec)}</span>
+            <span class="clock-label">this step</span>
+          </div>
+        {/if}
+      </div>
+
+      <div
+        class="progress"
+        role="progressbar"
+        aria-label="Workout progress"
+        aria-valuemin="0"
+        aria-valuemax="100"
+        aria-valuenow={Math.round(progressPct)}
+      >
+        <span style:width="{progressPct}%"></span>
+      </div>
+
+      <div class="player">
+        <button class="toggle" class:primary={phase !== 'running'} aria-label={toggleAria} onclick={toggle}>
+          {toggleLabel}
+        </button>
+        {#if phase !== 'idle'}
+          <button class="ghost" onclick={reset}>Reset</button>
+        {/if}
+      </div>
+
+      {#if phase === 'done'}
+        <p class="done-note" role="status">Nice work — session complete.</p>
       {/if}
     </div>
-
-    {#if phase !== 'idle' && currentStep}
-      <div class="status">
-        <span><span class="time" role="timer">{formatClock(totalElapsedSec)}</span> elapsed</span>
-        <span>{currentStep.name} · {formatClock(stepRemainingSec)}</span>
-      </div>
-    {/if}
-
-    {#if phase === 'done'}
-      <p class="done-note" role="status">Nice work — session complete.</p>
-    {/if}
 
     <p class="overview">
       About {minutes} minutes · {exerciseCount} exercises · spoken coaching, so keep your sound on
@@ -155,7 +194,9 @@
           {#if row.step.kind === 'exercise'}
             <details open={phase === 'running' && stepIndex === row.i}>
               <summary>
-                {row.number}. {row.step.name} <span class="dur">{row.step.durationSec}s</span>
+                <span class="num">{row.number}</span>
+                <span class="name">{row.step.name}</span>
+                <span class="dur">{row.step.durationSec}s</span>
               </summary>
               <p>{row.step.description}</p>
             </details>
@@ -166,46 +207,124 @@
       {/each}
     </ol>
 
-    <button class="back" onclick={chooseAnother}>← Choose another workout</button>
+    <button class="ghost back" onclick={chooseAnother}>← Choose another workout</button>
   {/if}
 </section>
 
 <style>
-  .tool {
+  .option {
     display: flex;
-    flex-direction: column;
-    align-items: stretch;
+    align-items: center;
     gap: 1rem;
-    /* Definite width (not min(34rem, 100%)): the page shell shrink-to-fits
-       around this tool, and percentages are ignored while it measures, so an
-       open <details> description would otherwise widen the whole page. */
-    width: 34rem;
-    max-width: 100%;
-    margin: 0 auto;
+    width: 100%;
+    padding: 1rem 1.1rem;
     text-align: left;
+    font-weight: 400;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--bg);
   }
 
-  .choice {
+  .option:hover {
+    border-color: var(--accent-text);
+  }
+
+  .option:active {
+    transform: none;
+  }
+
+  .option-text {
+    flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 0.25rem;
-    width: 100%;
-    padding: 0.8rem 1rem;
-    text-align: left;
-    border: 1px solid rgba(128, 128, 128, 0.3);
-    border-radius: 10px;
-    background: rgba(128, 128, 128, 0.07);
-    color: inherit;
-    cursor: pointer;
+    gap: 0.2rem;
   }
 
-  .choice:hover {
-    border-color: #646cff;
+  .option strong {
+    font-size: 1.05rem;
   }
 
-  .choice .meta {
+  .option .meta {
     font-size: 0.8rem;
-    opacity: 0.7;
+    color: var(--muted);
+  }
+
+  .option-go {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    background: var(--accent);
+    color: var(--on-accent);
+    font-size: 0.85rem;
+  }
+
+  .deck {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1.4rem 1.25rem 1.25rem;
+    border-radius: 28px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+    transition: border-color 0.3s;
+  }
+
+  .deck.live {
+    border-color: var(--accent-text);
+  }
+
+  .now {
+    margin: -0.5rem 0 0;
+    font-size: 1.35rem;
+    font-weight: 700;
+  }
+
+  .clocks {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 1rem;
+  }
+
+  .clocks > div {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .clocks .right {
+    align-items: flex-end;
+  }
+
+  .clock {
+    font-size: clamp(3.5rem, 16vw, 5rem);
+  }
+
+  .right .clock {
+    color: var(--accent-text);
+  }
+
+  .clock-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--muted);
+  }
+
+  .progress {
+    height: 6px;
+    border-radius: 999px;
+    background: var(--surface-2);
+    overflow: hidden;
+  }
+
+  .progress span {
+    display: block;
+    height: 100%;
+    background: var(--accent);
+    transition: width 0.25s linear;
   }
 
   .player {
@@ -215,33 +334,23 @@
   }
 
   .toggle {
-    font-size: 1rem;
-    font-weight: 600;
-    padding: 0.55rem 1.6rem;
-  }
-
-  .status {
-    display: flex;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 0.4rem;
-    font-variant-numeric: tabular-nums;
-  }
-
-  .time {
-    font-weight: 600;
+    flex: 1;
+    padding: 0.95rem;
+    font-size: 1.1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
   }
 
   .done-note {
     margin: 0;
-    color: #646cff;
+    color: var(--accent-text);
     font-weight: 600;
   }
 
   .overview {
     margin: 0;
     font-size: 0.85rem;
-    opacity: 0.7;
+    color: var(--muted);
   }
 
   .steps {
@@ -250,43 +359,77 @@
     padding: 0;
     display: flex;
     flex-direction: column;
-    gap: 0.35rem;
+    gap: 0.4rem;
   }
 
   .steps li {
-    border-left: 3px solid transparent;
-    border-radius: 4px;
-    padding: 0.15rem 0.4rem 0.15rem 0.6rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    background: var(--surface);
+    padding: 0.7rem 0.9rem;
   }
 
   .steps li.pause {
-    font-size: 0.85rem;
-    opacity: 0.7;
+    background: none;
+    border-style: dashed;
+    padding: 0.4rem 0.9rem;
+    font-size: 0.82rem;
+    color: var(--muted);
   }
 
   .steps li.past {
-    opacity: 0.45;
+    opacity: 0.4;
   }
 
   .steps li.current {
-    border-left-color: #646cff;
-    background: rgba(100, 108, 255, 0.08);
+    border-color: var(--accent-text);
+    box-shadow: 0 0 0 3px var(--accent-soft);
   }
 
   summary {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
     cursor: pointer;
+    list-style: none;
+  }
+
+  summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .num {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 1.6rem;
+    height: 1.6rem;
+    border-radius: 50%;
+    background: var(--surface-2);
+    font-size: 0.75rem;
+    font-weight: 800;
+  }
+
+  .current .num {
+    background: var(--accent);
+    color: var(--on-accent);
+  }
+
+  .name {
+    flex: 1;
+    font-weight: 600;
   }
 
   .dur {
     font-size: 0.85rem;
-    opacity: 0.7;
-    margin-left: 0.3rem;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
   }
 
   details p {
-    margin: 0.3rem 0 0.2rem;
+    margin: 0.6rem 0 0.1rem 2.3rem;
     font-size: 0.92rem;
-    opacity: 0.85;
+    color: var(--muted);
   }
 
   .back {
