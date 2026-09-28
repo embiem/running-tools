@@ -13,6 +13,9 @@
     todayISO,
   } from './taperPlanner'
   import type { DistanceId, TaperInput, TaperWeek, Unit } from './taperPlanner'
+  import type { Message } from './i18n.svelte'
+  import { dateLocale, formatPercent } from './format'
+  import { m } from '../paraglide/messages.js'
 
   const STORAGE_KEY = 'taperPlanner.input'
 
@@ -26,19 +29,22 @@
 
   const distanceEntries = Object.entries(DISTANCES) as [
     DistanceId,
-    { label: string; meters: number | null },
+    { label: Message; meters: number | null },
   ][]
 
   const today = todayISO()
-  const dayFormat = new Intl.DateTimeFormat(undefined, {
-    weekday: 'short',
-    day: 'numeric',
-    month: 'short',
-  })
-  const shortFormat = new Intl.DateTimeFormat(undefined, { day: 'numeric', month: 'short' })
+  const dayFormat = $derived(
+    new Intl.DateTimeFormat(dateLocale(), {
+      weekday: 'short',
+      day: 'numeric',
+      month: 'short',
+    }),
+  )
+  const shortFormat = $derived(new Intl.DateTimeFormat(dateLocale(), { day: 'numeric', month: 'short' }))
 
   // Dates stay as YYYY-MM-DD in the engine; only the display goes through the
-  // browser's locale, and it is built from date parts so no UTC shift creeps in.
+  // app's language (in the browser's regional variant of it, see dateLocale),
+  // and it is built from date parts so no UTC shift creeps in.
   function toDate(iso: string): Date {
     const [year, month, day] = iso.split('-').map(Number)
     return new Date(year, month - 1, day)
@@ -50,11 +56,10 @@
   const weekMeta = (week: TaperWeek): string => {
     const volume =
       week.raceMeters > 0
-        ? `${fmt(week.trainingMeters)} training + ${fmt(week.raceMeters)} race`
-        : `${fmt(week.trainingMeters)} training`
-    return [formatRange(week.startDate, week.endDate), volume, `${week.pctOfNormal}% of normal`].join(
-      ' · ',
-    )
+        ? m.taper_week_volume_race({ training: fmt(week.trainingMeters), race: fmt(week.raceMeters) })
+        : m.taper_week_volume({ training: fmt(week.trainingMeters) })
+    const share = m.taper_week_share({ percent: formatPercent(week.pctOfNormal) })
+    return [formatRange(week.startDate, week.endDate), volume, share].join(' · ')
   }
 
   let input = $state<TaperInput>(loadInput())
@@ -93,26 +98,23 @@
   }
 </script>
 
-<section class="tool split" aria-label="Taper planner">
+<section class="tool split" aria-label={m.taper_label()}>
   <div class="inputs">
-    <Panel
-      title="Your race"
-      hint="The date and distance you are tapering for — the plan counts back from race day."
-    >
+    <Panel title={m.taper_race_title()} hint={m.taper_race_hint()}>
       <div class="fields">
         <label>
-          <span class="label-text">Race date</span>
+          <span class="label-text">{m.taper_race_date()}</span>
           <span class="label-input">
-            <input type="date" bind:value={input.raceDate} aria-label="Race date" />
+            <input type="date" bind:value={input.raceDate} aria-label={m.taper_race_date()} />
           </span>
         </label>
 
         <label>
-          <span class="label-text">Distance</span>
+          <span class="label-text">{m.common_distance()}</span>
           <span class="label-input">
-            <select bind:value={input.distance} aria-label="Race distance">
+            <select bind:value={input.distance} aria-label={m.common_race_distance()}>
               {#each distanceEntries as [id, preset] (id)}
-                <option value={id}>{preset.label}</option>
+                <option value={id}>{preset.label()}</option>
               {/each}
             </select>
           </span>
@@ -120,7 +122,7 @@
 
         {#if effective.distance === 'custom'}
           <label>
-            <span class="label-text">Custom distance</span>
+            <span class="label-text">{m.distance_custom()}</span>
             <span class="label-input">
               <input
                 type="number"
@@ -128,14 +130,14 @@
                 max={LIMITS.customMeters.max}
                 step={LIMITS.customMeters.step}
                 bind:value={input.customMeters}
-                aria-label="Custom race distance in metres"
+                aria-label={m.taper_custom_label()}
               />
               <span class="unit">m</span>
             </span>
           </label>
         {/if}
 
-        <div class="segmented" role="radiogroup" aria-label="Distance unit">
+        <div class="segmented" role="radiogroup" aria-label={m.common_distance_unit()}>
           <label>
             <input
               type="radio"
@@ -143,7 +145,7 @@
               value="km"
               checked={effective.unit === 'km'}
               onchange={() => setUnit('km')}
-            /> Kilometres
+            /> {m.common_kilometres()}
           </label>
           <label>
             <input
@@ -152,21 +154,18 @@
               value="mi"
               checked={effective.unit === 'mi'}
               onchange={() => setUnit('mi')}
-            /> Miles
+            /> {m.common_miles()}
           </label>
         </div>
       </div>
     </Panel>
 
-    <Panel
-      title="Your training"
-      hint="A normal week and how you split it — the taper cuts this volume, not your run count."
-    >
+    <Panel title={m.taper_training_title()} hint={m.taper_training_hint()}>
       <div class="fields">
         <label>
           <span class="label-text">
-            Normal training week
-            <span class="hint">Your average weekly distance in the weeks before the taper.</span>
+            {m.taper_normal_week()}
+            <span class="hint">{m.taper_normal_week_hint()}</span>
           </span>
           <span class="label-input">
             <input
@@ -175,7 +174,7 @@
               max={weeklyBounds.max}
               step={weeklyBounds.step}
               bind:value={input.weeklyDistance}
-              aria-label="Normal weekly distance"
+              aria-label={m.taper_normal_week_label()}
             />
             <span class="unit">{effective.unit}</span>
           </span>
@@ -183,8 +182,8 @@
 
         <label>
           <span class="label-text">
-            Runs per week
-            <span class="hint">Unchanged by the taper — the runs get shorter, not fewer.</span>
+            {m.taper_runs()}
+            <span class="hint">{m.taper_runs_hint()}</span>
           </span>
           <span class="label-input">
             <input
@@ -193,50 +192,52 @@
               max={LIMITS.runsPerWeek.max}
               step={LIMITS.runsPerWeek.step}
               bind:value={input.runsPerWeek}
-              aria-label="Runs per week"
+              aria-label={m.taper_runs()}
             />
           </span>
         </label>
 
-        <div class="segmented" role="radiogroup" aria-label="Taper length">
+        <div class="segmented" role="radiogroup" aria-label={m.taper_length()}>
           {#each TAPER_WEEKS_OPTIONS as weeks (weeks)}
             <label>
               <input type="radio" name="taperWeeks" value={weeks} bind:group={input.taperWeeks} />
-              {weeks} weeks
+              {m.taper_weeks({ weeks })}
             </label>
           {/each}
         </div>
         <p class="preset-hint">
-          {result.weeks.map((week) => `${week.pctOfNormal}%`).join(' · ')} of your normal week
+          {m.taper_week_shares({
+            shares: result.weeks.map((week) => formatPercent(week.pctOfNormal)).join(' · '),
+          })}
         </p>
       </div>
     </Panel>
 
-    <button type="button" class="ghost reset" onclick={reset}>Reset to defaults</button>
+    <button type="button" class="ghost reset" onclick={reset}>{m.common_reset()}</button>
   </div>
 
   <div class="results">
-    <h2>Taper window</h2>
+    <h2>{m.taper_window_title()}</h2>
     <div class="stats">
       <div class="stat hero">
-        <span class="eyebrow">Taper starts</span>
+        <span class="eyebrow">{m.taper_starts()}</span>
         <span class="stat-value">{formatDay(result.taperStartDate)}</span>
-        <span class="stat-sub">{result.taperDays} days before the race</span>
+        <span class="stat-sub">{m.taper_days_before({ days: result.taperDays })}</span>
       </div>
       <div class="stat">
-        <span class="eyebrow">Volume cut</span>
+        <span class="eyebrow">{m.taper_volume_cut()}</span>
         <span class="stat-value">{result.totalReductionPct}<small>%</small></span>
-        <span class="stat-sub">over the taper · optimum 41–60%</span>
+        <span class="stat-sub">{m.taper_volume_cut_sub()}</span>
       </div>
   </div>
   <dl>
-    <dt>Race</dt>
-    <dd>{distance.label} · {fmt(result.raceMeters)} · {formatDay(result.raceDate)}</dd>
-    <dt>Normal week</dt>
+    <dt>{m.taper_race()}</dt>
+    <dd>{distance.label()} · {fmt(result.raceMeters)} · {formatDay(result.raceDate)}</dd>
+    <dt>{m.taper_normal_week_short()}</dt>
     <dd>{fmt(result.normalWeeklyMeters)}</dd>
   </dl>
 
-  <h2>Week by week</h2>
+  <h2>{m.taper_weeks_title()}</h2>
   {#each result.weeks as week (week.index)}
     <table>
       <caption>
@@ -245,9 +246,9 @@
       </caption>
       <thead>
         <tr>
-          <th scope="col">Day</th>
-          <th scope="col">Session</th>
-          <th scope="col">Distance</th>
+          <th scope="col">{m.taper_day()}</th>
+          <th scope="col">{m.taper_session()}</th>
+          <th scope="col">{m.common_distance()}</th>
         </tr>
       </thead>
       <tbody>
@@ -257,8 +258,8 @@
             class:today={day.date === today}
             class:highlight={day.kind === 'race'}
           >
-            <th scope="row">{formatDay(day.date)}</th>
-            <td>{SESSION_LABELS[day.kind]}</td>
+            <th scope="row" data-today={m.taper_today()}>{formatDay(day.date)}</th>
+            <td>{SESSION_LABELS[day.kind]()}</td>
             <td>{day.kind === 'rest' ? '—' : fmt(day.meters)}</td>
           </tr>
         {/each}
@@ -275,41 +276,12 @@
   {/if}
 
   <details class="info">
-    <summary>Where these numbers come from</summary>
-    <p>
-      A taper is a progressive, nonlinear cut in training load: keep the intensity, cut the volume,
-      and cut it by a lot. Mujika &amp; Padilla (<em>Med Sci Sports Exerc</em> 2003;35:1182–1187)
-      describe it as maintaining training intensity, reducing training volume by up to 60–90% and
-      trimming frequency by no more than 20%, over anything from 4 to more than 28 days, for a typical
-      performance gain of about 3% (range 0.5–6.0%). The meta-analysis by Bosquet et al.
-      (<em>Med Sci Sports Exerc</em> 2007;39:1358–1365) narrows the optimum: a two-week taper in which
-      training volume falls <em>exponentially</em> by 41–60%, with intensity and frequency unchanged.
-    </p>
-    <p>
-      This planner decays your weekly training volume geometrically so that the volume over the whole
-      taper window lands 50% below the same number of normal weeks — the middle of that 41–60% band —
-      and reports the reduction it actually schedules, because the day layout can round it either way.
-      Race day is not part of the training volume: race week is a short training week <em>plus</em> the
-      race, which is why its total load can still look large.
-    </p>
-    <p>
-      Session types are convention, not measurement. The papers prescribe maintained intensity and
-      frequency, so the plan keeps your number of runs, one long run per week until race week, and one
-      short race-pace sharpener per week — with every run scaled down with its week. The day-before
-      shakeout with strides and the rest day two days out are running practice rather than a published
-      protocol, and the evidence for priming with a short session the day before is small and variable.
-    </p>
-    <p>
-      For runners specifically, the largest data set available agrees with the shape and the length.
-      Across 158,117 recreational marathoners (Smyth &amp; Lawlor, <em>Front Sports Act Living</em>
-      2021;3:735220), tapers that cut volume every week out-performed tapers that did not, longer tapers
-      beat shorter ones up to three weeks, and a strict three-week taper was worth a median 5 min 32 s
-      (2.6%) against a minimal one. Those tapers were gentler than the meta-analysis optimum — roughly
-      30–40% off the normal week, with race week holding 35–50% of it — and this planner targets 33%
-      (three weeks) or 38% (two weeks) in race week. Bosquet's pooled studies were mostly swimmers and
-      cyclists (249 swimmers, 80 cyclists, 110 runners), so treat the volume numbers as a target and
-      keep the intensity the papers insist on.
-    </p>
+    <summary>{m.common_sources()}</summary>
+    <!-- Messages are the app's own copy, not user input: safe as HTML. -->
+    <p>{@html m.taper_info_literature()}</p>
+    <p>{@html m.taper_info_model()}</p>
+    <p>{m.taper_info_sessions()}</p>
+    <p>{@html m.taper_info_runners()}</p>
   </details>
   </div>
 </section>
@@ -364,7 +336,7 @@
   }
 
   tr.today th::after {
-    content: 'Today';
+    content: attr(data-today);
     margin-left: 0.5rem;
     padding: 0.05rem 0.45rem;
     border-radius: 999px;

@@ -36,9 +36,14 @@
  *
  * Stateless by design — unlike the metronome engine there is nothing to keep
  * alive between renders, so this module is pure functions, constants and types.
+ * Preset names and flag wording come from the message catalog
+ * (messages/{locale}.json) in the current language; no number depends on it.
  */
 
 import type { Flag } from './flags'
+import type { Message } from './i18n.svelte'
+import { formatDecimal, formatPercent } from './format'
+import { m } from '../paraglide/messages.js'
 
 // Nutrient content of the salts (mg of the element per gram of salt)
 const MG_SODIUM_PER_G_TABLE_SALT = 393 // NaCl, ~99% pure
@@ -82,8 +87,8 @@ export interface MixInput {
 }
 
 export interface Preset {
-  label: string
-  tagline: string // one line, shown under the preset buttons
+  label: Message
+  tagline: Message // one line, shown under the preset buttons
   durationMin: number // default session length for this preset
   fluidMlPerHour: number // default fluid rate for this preset
   carbsGPerH: number
@@ -142,8 +147,8 @@ export interface MixResult {
 
 export const PRESETS: Record<PresetId, Preset> = {
   easy: {
-    label: 'Easy run',
-    tagline: 'Up to ~60 min, relaxed pace',
+    label: m.drink_preset_easy_label,
+    tagline: m.drink_preset_easy_tagline,
     durationMin: 45,
     fluidMlPerHour: 500,
     carbsGPerH: 30,
@@ -151,8 +156,8 @@ export const PRESETS: Record<PresetId, Preset> = {
     potassiumRatio: 0.15, // low-intensity sweat K:Na
   },
   progression: {
-    label: 'Progression run',
-    tagline: '60–100 min, building effort',
+    label: m.drink_preset_progression_label,
+    tagline: m.drink_preset_progression_tagline,
     durationMin: 75,
     fluidMlPerHour: 650,
     carbsGPerH: 60,
@@ -160,8 +165,8 @@ export const PRESETS: Record<PresetId, Preset> = {
     potassiumRatio: 0.25, // sweat K:Na ≈ 0.24 by mass in marathoners (JISSN 2016)
   },
   marathon: {
-    label: 'Marathon',
-    tagline: '2 h+, race effort, maximum intake',
+    label: m.drink_preset_marathon_label,
+    tagline: m.drink_preset_marathon_tagline,
     durationMin: 180,
     fluidMlPerHour: 600,
     carbsGPerH: 80,
@@ -342,73 +347,85 @@ export function computeMix(input: MixInput): MixResult {
   if (concentrationCapped && carbsGPerL < idealCarbsGPerL) {
     flags.push({
       level: 'warn',
-      message: `Carbs capped at 80 g/L (8% solution) so the drink stays drinkable. Your bottles cover ${coveragePct(carbsG, needCarbsG)}% of the ${Math.round(needCarbsG)} g plan — add about ${gelCount} gel(s) (25 g each) or a third bottle.`,
+      message: m.drink_flag_carbs_capped({
+        coverage: formatPercent(coveragePct(carbsG, needCarbsG)),
+        plan: Math.round(needCarbsG),
+        gels: gelCount,
+      }),
     })
   }
   if (concentrationCapped && sodiumMgPerL < idealSodiumMgPerL) {
     flags.push({
       level: 'warn',
-      message: `Sodium capped at 1150 mg/L (50 mmol/L — above that, drinks get unpalatable). Your bottles cover ${coveragePct(sodiumMg, needSodiumMg)}% of the ${Math.round(needSodiumMg)} mg plan — take the rest at drink stations or from a stronger mix.`,
+      message: m.drink_flag_sodium_capped({
+        coverage: formatPercent(coveragePct(sodiumMg, needSodiumMg)),
+        plan: Math.round(needSodiumMg),
+      }),
     })
   }
   if (shortfallFluidMl > 0) {
     flags.push({
       level: 'info',
-      message: `Your ${hours} h plan needs ~${Math.round(needFluidMl)} ml of fluid but you carry ${carryMl} ml. Take about ${stationSipMl} ml every 15 min from drink stations, or carry an extra bottle.`,
+      message: m.drink_flag_fluid_short({
+        hours: formatDecimal(hours),
+        need: Math.round(needFluidMl),
+        carry: carryMl,
+        sip: stationSipMl,
+      }),
     })
   }
   if (tonicity === 'hypertonic') {
     flags.push({
       level: 'warn',
-      message: `This mix is hypertonic at ${Math.round(osmolarityMOsmPerL)} mOsm/L — it leaves the stomach slowly. Chase each bottle with plain water.`,
+      message: m.drink_flag_hypertonic({ osmolality: Math.round(osmolarityMOsmPerL) }),
     })
   }
   if (carbsGPerL < MIN_CARBS_G_PER_L_INFO) {
     flags.push({
       level: 'info',
-      message: `Very dilute (${Math.round(carbsGPerL)} g carbs/L). Fine as a hydration drink, but a long session will need gels or food for carbohydrate.`,
+      message: m.drink_flag_dilute({ carbs: Math.round(carbsGPerL) }),
     })
   }
   if (deliveredSodiumMgPerL < MIN_SODIUM_MG_PER_L_INFO) {
     flags.push({
       level: 'info',
-      message: `Only ${Math.round(deliveredSodiumMgPerL)} mg sodium/L. That is weaker than the 500–700 mg/L usually recommended for sessions over an hour.`,
+      message: m.drink_flag_low_sodium({ sodium: Math.round(deliveredSodiumMgPerL) }),
     })
   }
   if (monosaccharideGPerH >= FRUCTOSE_G_PER_H_LIMIT) {
     flags.push({
       level: 'info',
-      message: `Sucrose at ${preset.carbsGPerH} g/h delivers ~${monosaccharideGPerH} g/h fructose, at the ~30 g/h fructose absorption ceiling. Normal for most runners, but the upper limit if you get gut trouble.`,
+      message: m.drink_flag_fructose({ carbs: preset.carbsGPerH, fructose: monosaccharideGPerH }),
     })
   }
   if (monosaccharideGPerH > GLUCOSE_G_PER_H_LIMIT) {
     flags.push({
       level: 'warn',
-      message: `${preset.carbsGPerH} g/h sucrose means ~${monosaccharideGPerH} g/h glucose — above the ~60 g/h absorption ceiling. Gut training required.`,
+      message: m.drink_flag_glucose({ carbs: preset.carbsGPerH, glucose: monosaccharideGPerH }),
     })
   }
   if (i.fluidMlPerHour > 1000) {
     flags.push({
       level: 'info',
-      message: `Drinking over 1 L/h can dilute your blood sodium. Do not exceed your measured sweat rate.`,
+      message: m.drink_flag_overdrinking(),
     })
   }
   if (i.fluidMlPerHour < 300) {
     flags.push({
       level: 'info',
-      message: `Under 300 ml/h is unlikely to keep up with sweat losses — check your sweat rate by weighing yourself before and after a run.`,
+      message: m.drink_flag_underdrinking(),
     })
   }
   if (potassiumSaltClamped && potassiumSaltKPerG > 0) {
     flags.push({
       level: 'warn',
-      message: `Your potassium-rich salt is ${i.potassiumPct}% KCl — hitting the sodium target with it already overshoots the potassium target, so no plain table salt is added.`,
+      message: m.drink_flag_potassium_overshoot({ percent: formatPercent(i.potassiumPct) }),
     })
   }
   if (i.saltSetup === 'table-potassium' && i.potassiumPct < 5) {
     flags.push({
       level: 'info',
-      message: `Your potassium salt is only ${i.potassiumPct}% KCl, so it adds almost no potassium. Check the label.`,
+      message: m.drink_flag_potassium_low({ percent: formatPercent(i.potassiumPct) }),
     })
   }
 

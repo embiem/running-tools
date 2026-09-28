@@ -4,19 +4,21 @@
   import BodyMap from './BodyMap.svelte'
   import { CAUSES, RED_FLAGS, TOP_INJURIES, VIEWS, getSpot, normalizeSelection } from './painMap'
   import type { BodyView, Care, Likelihood, SpotId } from './painMap'
+  import type { Message } from './i18n.svelte'
+  import { formatPercent } from './format'
+  import { m } from '../paraglide/messages.js'
 
   const STORAGE_KEY = 'painMap.selection'
 
-  const LIKELIHOOD: Record<Likelihood, string> = {
-    common: 'Common',
-    occasional: 'Less common',
-    rare: 'Rare',
+  const LIKELIHOOD: Record<Likelihood, Message> = {
+    common: m.pain_likelihood_common,
+    occasional: m.pain_likelihood_occasional,
+    rare: m.pain_likelihood_rare,
   }
 
-  const CARE: Record<Care, string> = {
-    self: '',
-    doctor: 'See a doctor',
-    urgent: 'Urgent',
+  const CARE: Record<Exclude<Care, 'self'>, Message> = {
+    doctor: m.pain_care_doctor,
+    urgent: m.pain_care_urgent,
   }
 
   function loadSelection() {
@@ -31,7 +33,7 @@
   let view = $state<BodyView>(saved.view)
   let spotId = $state<SpotId | null>(saved.spot)
   const spot = $derived(spotId ? getSpot(spotId) : null)
-  const caption = $derived(VIEWS.find((v) => v.id === view)!.caption)
+  const caption = $derived(VIEWS.find((v) => v.id === view)!.caption())
   const emergencies = RED_FLAGS.filter((f) => f.urgent)
   const redFlags = RED_FLAGS.filter((f) => !f.urgent)
 
@@ -64,14 +66,14 @@
   }
 </script>
 
-<section class="tool split" aria-label="Runner's pain map">
+<section class="tool split" aria-label={m.pain_label()}>
   <div class="inputs" bind:this={mapPanel}>
-    <Panel title="Where does it hurt?" hint="Tap the spot. Every dot marks a place running injuries show up — either side works.">
-      <div class="segmented" role="radiogroup" aria-label="Body view">
+    <Panel title={m.pain_map_title()} hint={m.pain_map_hint()}>
+      <div class="segmented" role="radiogroup" aria-label={m.pain_view_group()}>
         {#each VIEWS as v (v.id)}
           <label>
             <input type="radio" name="pain-map-view" value={v.id} bind:group={view} />
-            {v.label}
+            {v.label()}
           </label>
         {/each}
       </div>
@@ -81,7 +83,7 @@
       <div class="map-foot">
         <span class="muted">{caption}</span>
         {#if spot}
-          <button type="button" class="ghost" onclick={() => (spotId = null)}>Clear</button>
+          <button type="button" class="ghost" onclick={() => (spotId = null)}>{m.pain_clear()}</button>
         {/if}
       </div>
     </Panel>
@@ -90,133 +92,104 @@
   <div class="results" bind:this={results}>
     {#if spot}
       <header class="spot-head">
-        <p class="eyebrow">Where it hurts</p>
-        <h2 class="display">{spot.name}</h2>
-        <p class="where">{spot.where}</p>
+        <p class="eyebrow">{m.pain_where_it_hurts()}</p>
+        <h2 class="display">{spot.name()}</h2>
+        <p class="where">{spot.where()}</p>
       </header>
 
-      <h2>Could be — commonest first</h2>
+      <h2>{m.pain_causes_title()}</h2>
       <ol class="causes">
         {#each spot.causes as id (id)}
           {@const cause = CAUSES[id]}
           <li class="cause {cause.care}">
             <div class="cause-head">
               <div>
-                <h3>{cause.name}</h3>
+                <h3>{cause.name()}</h3>
                 {#if cause.aka}
-                  <p class="aka">{cause.aka}</p>
+                  <p class="aka">{cause.aka()}</p>
                 {/if}
               </div>
               <p class="tags">
-                <span class="tag {cause.likelihood}">{LIKELIHOOD[cause.likelihood]}</span>
+                <span class="tag {cause.likelihood}">{LIKELIHOOD[cause.likelihood]()}</span>
                 {#if cause.care !== 'self'}
-                  <span class="tag care">{CARE[cause.care]}</span>
+                  <span class="tag care">{CARE[cause.care]()}</span>
                 {/if}
               </p>
             </div>
             {#if cause.stat}
-              <p class="stat-line">{cause.stat}</p>
+              <p class="stat-line">{cause.stat()}</p>
             {/if}
-            <p class="feels">{cause.feels}</p>
+            <p class="feels">{cause.feels()}</p>
             <details>
-              <summary>Why it happens and what helps</summary>
-              <h4>Why</h4>
-              <p>{cause.why}</p>
-              <h4>What helps</h4>
-              <p>{cause.helps}</p>
+              <summary>{m.pain_why_and_helps()}</summary>
+              <h4>{m.pain_why()}</h4>
+              <p>{cause.why()}</p>
+              <h4>{m.pain_helps()}</h4>
+              <p>{cause.helps()}</p>
               {#if cause.tool}
-                <a class="tool-link" href="/#{cause.tool.route}">{cause.tool.label} →</a>
+                <a class="tool-link" href="/#{cause.tool.route}">{cause.tool.label()} →</a>
               {/if}
             </details>
             <p class="check">
-              <strong>{cause.care === 'self' ? 'Get it checked if' : 'What to do'}</strong>
-              {cause.check}
+              <strong>{cause.care === 'self' ? m.pain_check_self() : m.pain_check_doctor()}</strong>
+              {cause.check()}
             </p>
           </li>
         {/each}
       </ol>
 
       <div class="nearby">
-        <span class="muted">Not quite the spot?</span>
+        <span class="muted">{m.pain_nearby()}</span>
         {#each spot.nearby as id (id)}
-          <button type="button" class="chip" onclick={() => pick(id)}>{getSpot(id).short}</button>
+          <button type="button" class="chip" onclick={() => pick(id)}>{getSpot(id).short()}</button>
         {/each}
       </div>
     {:else}
       <header class="spot-head">
-        <p class="eyebrow">Start here</p>
-        <h2 class="display">Tap where it hurts</h2>
-        <p class="where">
-          Pick a spot on the front, the back or the sole of the foot to see the running injuries that most
-          often cause pain there: what each one feels like, why it happens and what helps.
-        </p>
+        <p class="eyebrow">{m.pain_start_here()}</p>
+        <h2 class="display">{m.pain_start_title()}</h2>
+        <p class="where">{m.pain_start_text()}</p>
       </header>
 
-      <h2>The five commonest running injuries</h2>
+      <h2>{m.pain_top_title()}</h2>
       <ol class="top">
         {#each TOP_INJURIES as item, i (item.cause)}
           <li>
             <button type="button" onclick={() => pick(item.spot)}>
               <span class="rank display">{i + 1}</span>
               <span class="top-name">
-                {CAUSES[item.cause].name}
-                <span class="muted">{getSpot(item.spot).short}</span>
+                {CAUSES[item.cause].name()}
+                <span class="muted">{getSpot(item.spot).short()}</span>
               </span>
-              <span class="pct">{item.percent}%</span>
+              <span class="pct">{formatPercent(item.percent, 1)}</span>
             </button>
           </li>
         {/each}
       </ol>
-      <p class="hint">Share of new running injuries, from a 2021 systematic review (Kakouris et al.).</p>
+      <p class="hint">{m.pain_top_hint()}</p>
     {/if}
 
-    <h2>Get help straight away if</h2>
+    <h2>{m.pain_red_flags_title()}</h2>
     {#each emergencies as flag (flag.message)}
-      <p class="flag warn emergency">{flag.message}</p>
+      <p class="flag warn emergency">{flag.message()}</p>
     {/each}
     <ul class="red-flags">
       {#each redFlags as flag (flag.message)}
-        <li>{flag.message}</li>
+        <li>{flag.message()}</li>
       {/each}
     </ul>
 
     <details class="info">
-      <summary>How to read this, and where it comes from</summary>
-      <p>
-        This is a guide, <strong>not a diagnosis</strong>. For the spot you pick it lists the running
-        injuries that most often hurt there — the common ones first, then rarer ones worth ruling out —
-        and what tells them apart. Only an examination can say which it is: see a sports physiotherapist or
-        doctor when pain changes how you run or lasts more than a couple of weeks.
-      </p>
-      <p>
-        <strong>Most running pain is overload</strong>: training that outpaces what bone, tendon or muscle
-        has adapted to. In a study that followed 5,200 runners, a single run more than 10% longer than the
-        longest of the previous 30 days raised the injury rate (Frandsen et al. 2025); novices who raised
-        their weekly distance by more than 30% got more overuse injuries such as runner’s knee, ITB
-        syndrome and shin splints (Nielsen et al. 2014).
-      </p>
-      <p>
-        <strong>Running with pain</strong>: for tendon and kneecap pain, pain of up to about 5 out of 10
-        during a run that has settled by the next morning is a well-tested rule for carrying on (Silbernagel
-        et al. 2007). It does not apply to a suspected stress fracture — that needs rest and a doctor — and
-        many stress fractures come from eating too little for the training you do (IOC consensus on
-        relative energy deficiency in sport, 2023).
-      </p>
-      <p>
-        <strong>Running doesn’t wear out your knees</strong>: across 17 studies and 114,829 people,
-        recreational runners had less hip and knee arthritis (3.5%) than people who did not run (10.2%)
-        (Alentorn-Geli et al. 2017).
-      </p>
-      <p>
-        Sources: injury shares from Kakouris et al. 2021 (systematic review); knee from the 2016
-        patellofemoral pain consensus; shins from Winters 2018 and Newman 2013; Achilles from the 2018
-        clinical practice guideline; heel from the 2023 guideline; hip from the LEAP trial (2018); high-risk
-        stress fractures from McInnis &amp; Ramey 2016; side stitch from Morton &amp; Callister 2015; cardiac
-        arrest in races from Kim et al. 2012.
-      </p>
+      <summary>{m.pain_info_title()}</summary>
+      <!-- Messages are the app's own copy, not user input: safe as HTML. -->
+      <p>{@html m.pain_info_guide()}</p>
+      <p>{@html m.pain_info_overload()}</p>
+      <p>{@html m.pain_info_running_with_pain()}</p>
+      <p>{@html m.pain_info_knees()}</p>
+      <p>{@html m.pain_info_sources()}</p>
     </details>
 
-    <button type="button" class="ghost back-to-map" onclick={() => reveal(mapPanel)}>↑ Pick another spot</button>
+    <button type="button" class="ghost back-to-map" onclick={() => reveal(mapPanel)}>{m.pain_pick_another()}</button>
   </div>
 </section>
 
@@ -257,6 +230,8 @@
     margin: 0;
     font-size: clamp(2.2rem, 7vw, 3.2rem);
     text-transform: uppercase;
+    /* Last resort for a translated spot name longer than a phone is wide. */
+    overflow-wrap: anywhere;
   }
 
   .where {

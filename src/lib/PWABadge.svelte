@@ -1,5 +1,6 @@
 <script lang="ts">
   import { useRegisterSW } from 'virtual:pwa-register/svelte'
+  import { m } from '../paraglide/messages.js'
 
   // periodic sync is disabled, change the value to enable it, the period is in milliseconds
   // You can remove onRegisteredSW callback and registerPeriodicSync function
@@ -50,7 +51,7 @@
   }
 
   let toast = $derived($needRefresh)
-  let message = $derived($needRefresh ? 'New content available, click on reload button to update.' : '')
+  let message = $derived($needRefresh ? m.pwa_update_message() : '')
 </script>
 
 {#if toast}
@@ -67,11 +68,11 @@
     <div class="buttons">
       {#if $needRefresh}
         <button type="button" class="primary" onclick={() => updateServiceWorker(true)}>
-          Reload
+          {m.pwa_reload()}
         </button>
       {/if}
       <button type="button" class="ghost" onclick={close}>
-        Close
+        {m.pwa_close()}
       </button>
     </div>
   </div>

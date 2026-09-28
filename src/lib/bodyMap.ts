@@ -1,4 +1,6 @@
 import type { BodyView, SpotId } from './painMap'
+import type { Message } from './i18n.svelte'
+import { m } from '../paraglide/messages.js'
 
 /**
  * Geometry of the pain map drawings: a front and a back view of a runner and
@@ -45,7 +47,7 @@ export interface Figure {
   hair: string
   /** Anatomical hints: kneecaps, spine, creases — strokes, no fill. */
   details: string[]
-  labels: { x: number; y: number; rotate: number; text: string }[]
+  labels: { x: number; y: number; rotate: number; text: Message }[]
   zones: Zone[]
 }
 
@@ -363,8 +365,8 @@ export const FIGURES: Record<BodyView, Figure> = {
       ellipse(108, 404, 30, 34), // heel pad
     ],
     labels: [
-      { x: 24, y: 290, rotate: -90, text: 'INNER EDGE' },
-      { x: 180, y: 290, rotate: 90, text: 'OUTER EDGE' },
+      { x: 24, y: 290, rotate: -90, text: m.pain_sole_inner_edge },
+      { x: 180, y: 290, rotate: 90, text: m.pain_sole_outer_edge },
     ],
     zones: zones('sole', [
       { spot: 'toes', cx: 108, cy: 82, rx: 68, ry: 32, rotate: 12, dot: [100, 66] },

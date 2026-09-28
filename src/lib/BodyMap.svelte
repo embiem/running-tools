@@ -3,6 +3,7 @@
   import type { Zone } from './bodyMap'
   import { VIEWS, getSpot } from './painMap'
   import type { BodyView, SpotId } from './painMap'
+  import { m } from '../paraglide/messages.js'
 
   interface Props {
     view: BodyView
@@ -73,7 +74,7 @@
   <svg
     viewBox="0 0 {WIDTH} {HEIGHT}"
     role="group"
-    aria-label="Body map, {VIEWS.find((v) => v.id === view)?.caption.toLowerCase()}"
+    aria-label={VIEWS.find((v) => v.id === view)?.mapLabel()}
   >
     <g aria-hidden="true">
       <!-- Outline pass under the fill pass: where parts overlap the fill hides
@@ -96,9 +97,9 @@
           <path {d} />
         {/each}
       </g>
-      {#each figure.labels as label (label.text)}
+      {#each figure.labels as label (label.x)}
         <text class="label" x={label.x} y={label.y} transform="rotate({label.rotate} {label.x} {label.y})">
-          {label.text}
+          {label.text()}
         </text>
       {/each}
     </g>
@@ -111,7 +112,7 @@
         role="button"
         tabindex={z.primary ? 0 : -1}
         aria-hidden={z.primary ? undefined : 'true'}
-        aria-label="{getSpot(z.spot).name}: pain here"
+        aria-label={m.pain_zone_label({ spot: getSpot(z.spot).name() })}
         aria-pressed={selected === z.spot}
         onclick={() => pick(z)}
         onkeydown={(e) => onkeydown(e, z)}
@@ -143,7 +144,7 @@
       style:top="{(tip.y / HEIGHT) * 100}%"
       aria-hidden="true"
     >
-      {getSpot(tip.spot).short}
+      {getSpot(tip.spot).short()}
     </div>
   {/if}
 </div>

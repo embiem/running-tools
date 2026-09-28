@@ -1,6 +1,7 @@
 <script lang="ts">
   import YouTubeEmbed from './YouTubeEmbed.svelte'
   import { VIDEO_GROUPS, videosIn } from './youtubeWorkouts'
+  import { m } from '../paraglide/messages.js'
 
   // The only tool that needs a signal: say so up front instead of letting the
   // player fail after a tap.
@@ -9,15 +10,15 @@
 
 <svelte:window ononline={() => (online = true)} onoffline={() => (online = false)} />
 
-<section class="tool" aria-label="YouTube workouts">
+<section class="tool" aria-label={m.yt_label()}>
   {#if !online}
-    <p class="flag warn offline" role="status">You are offline. These videos stream from YouTube, so they need a connection.</p>
+    <p class="flag warn offline" role="status">{m.yt_offline()}</p>
   {/if}
 
   <div class="results">
     {#each VIDEO_GROUPS as group (group.category)}
-      <h2>{group.title}</h2>
-      <p class="blurb">{group.blurb}</p>
+      <h2>{group.title()}</h2>
+      <p class="blurb">{group.blurb()}</p>
       <ul class="videos">
         {#each videosIn(group.category) as video (video.id)}
           <li>
@@ -25,11 +26,13 @@
             <div class="meta">
               <h3>{video.title}</h3>
               <p class="channel">
-                {[video.channel, video.minutes && `${video.minutes} min`].filter(Boolean).join(' · ')}
+                {[video.channel, video.minutes && m.yt_minutes({ minutes: video.minutes })]
+                  .filter(Boolean)
+                  .join(' · ')}
               </p>
-              <p class="why">{video.why}</p>
+              <p class="why">{video.why()}</p>
               <a href="https://www.youtube.com/watch?v={video.id}" target="_blank" rel="noopener noreferrer">
-                Watch on YouTube
+                {m.yt_watch()}
               </a>
             </div>
           </li>
@@ -38,17 +41,10 @@
     {/each}
 
     <details class="info">
-      <summary>How these were picked</summary>
-      <p>
-        Not by view count alone. Every video is made <strong>for runners</strong>, is a
-        <strong>follow-along</strong> session rather than a talk about one, and is led by a running coach,
-        a physical therapist or a channel whose audience is known for its warm reception. Where an
-        independent round-up (Coach magazine, Road Runner Sports) recommended a video, that counted too.
-      </p>
-      <p>
-        Nothing loads from YouTube until you press play, and the player then runs in YouTube’s
-        privacy-enhanced mode (youtube-nocookie.com).
-      </p>
+      <summary>{m.yt_info_title()}</summary>
+      <!-- Messages are the app's own copy, not user input: safe as HTML. -->
+      <p>{@html m.yt_info_criteria()}</p>
+      <p>{m.yt_info_privacy()}</p>
     </details>
   </div>
 </section>

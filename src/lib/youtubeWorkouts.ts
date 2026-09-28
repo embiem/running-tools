@@ -11,8 +11,13 @@
  * title or description states; `minutes` is left out where neither does.
  *
  * Only the video id is stored: the embed loads nothing from YouTube until the
- * viewer presses play (see YouTubeEmbed.svelte).
+ * viewer presses play (see YouTubeEmbed.svelte). Titles and channel names are
+ * the videos' own (the videos are in English); the group copy and each `why`
+ * come from the message catalog (messages/{locale}.json, keys `yt_*`).
  */
+
+import type { Message } from './i18n.svelte'
+import { m } from '../paraglide/messages.js'
 
 export type VideoCategory = 'warm-up' | 'stretch' | 'strength'
 
@@ -26,30 +31,30 @@ export interface YouTubeWorkout {
   /** Length in minutes, when the video states it. */
   minutes?: number
   /** One line on why it made the list. */
-  why: string
+  why: Message
 }
 
 export interface VideoGroup {
   category: VideoCategory
-  title: string
-  blurb: string
+  title: Message
+  blurb: Message
 }
 
 export const VIDEO_GROUPS: VideoGroup[] = [
   {
     category: 'warm-up',
-    title: 'Warm up before you run',
-    blurb: 'Dynamic moves that raise your temperature and wake up hips, ankles and calves. Five to seven minutes.',
+    title: m.yt_group_warm_up_title,
+    blurb: m.yt_group_warm_up_blurb,
   },
   {
     category: 'stretch',
-    title: 'Stretch and yoga after the run',
-    blurb: 'Slow, held work for hips, hamstrings and calves once you are back home.',
+    title: m.yt_group_stretch_title,
+    blurb: m.yt_group_stretch_blurb,
   },
   {
     category: 'strength',
-    title: 'Strength for runners',
-    blurb: 'Two sessions a week on non-run or easy days. Bodyweight to start; add load as they get easy.',
+    title: m.yt_group_strength_title,
+    blurb: m.yt_group_strength_blurb,
   },
 ]
 
@@ -60,7 +65,7 @@ export const YOUTUBE_WORKOUTS: YouTubeWorkout[] = [
     channel: 'The Run Experience',
     category: 'warm-up',
     minutes: 5,
-    why: 'Run-specific coaching channel; goes from general movement to run-form drills, and you follow along in real time.',
+    why: m.yt_why_QzmsKIdsgko,
   },
   {
     id: 'MKuZOwYukho',
@@ -68,14 +73,14 @@ export const YOUTUBE_WORKOUTS: YouTubeWorkout[] = [
     channel: 'Yoga With Adriene',
     category: 'warm-up',
     minutes: 7,
-    why: 'A compact, moving (not held) sequence from one of the best-loved yoga channels on YouTube. Friendly to beginners.',
+    why: m.yt_why_MKuZOwYukho,
   },
   {
     id: '3WUtJxLv-wI',
     title: '5 Minute Warm-Up You NEED before EVERY RUN',
     category: 'warm-up',
     minutes: 5,
-    why: 'A no-equipment dynamic warm-up done in real time, aimed at getting you out the door ready and running pain-free.',
+    why: m.yt_why_3WUtJxLv_wI,
   },
   {
     id: 'BylKeXx0fbc',
@@ -83,14 +88,14 @@ export const YOUTUBE_WORKOUTS: YouTubeWorkout[] = [
     channel: 'Live Free Warrior',
     category: 'stretch',
     minutes: 10,
-    why: 'Picked in Coach magazine’s round-up of post-run stretch videos. Short, and aimed squarely at hips and hamstrings.',
+    why: m.yt_why_BylKeXx0fbc,
   },
   {
     id: '0hTllAb4XGg',
     title: 'Runner’s Yoga',
     channel: 'Yoga With Adriene',
     category: 'stretch',
-    why: 'A longer release-and-recover practice for after a run, with the calm, clear cueing the channel is known for.',
+    why: m.yt_why_0hTllAb4XGg,
   },
   {
     id: 'FbmLx-PahO4',
@@ -98,7 +103,7 @@ export const YOUTUBE_WORKOUTS: YouTubeWorkout[] = [
     channel: 'Mady Morrison',
     category: 'stretch',
     minutes: 10,
-    why: 'Yoga-inspired cool-down for glutes, quads, hamstrings and hips, then spine and side body. Needs only a mat.',
+    why: m.yt_why_FbmLx_PahO4,
   },
   {
     id: 'pe9v9uiUujQ',
@@ -106,7 +111,7 @@ export const YOUTUBE_WORKOUTS: YouTubeWorkout[] = [
     channel: 'Dr. Duane Scotti · Spark Healthy Runner',
     category: 'strength',
     minutes: 25,
-    why: 'Led by a running physical therapist (DPT, PhD). Seven staple exercises chosen for injury resistance.',
+    why: m.yt_why_pe9v9uiUujQ,
   },
   {
     id: '6LB__vPvaaE',
@@ -114,7 +119,7 @@ export const YOUTUBE_WORKOUTS: YouTubeWorkout[] = [
     channel: 'Runna',
     category: 'strength',
     minutes: 20,
-    why: 'Coached by Runna’s head coach Ben Parker: a leg-focused session built around what runners actually load.',
+    why: m.yt_why_6LB__vPvaaE,
   },
   {
     id: 'rZpMnnN4s_o',
@@ -122,7 +127,7 @@ export const YOUTUBE_WORKOUTS: YouTubeWorkout[] = [
     channel: 'REI · Deeply Moving with Elena Cheung',
     category: 'strength',
     minutes: 20,
-    why: 'Bodyweight only, led by running coach Aaliyah Earvin; recommended by Road Runner Sports’ list of YouTube workouts for runners.',
+    why: m.yt_why_rZpMnnN4s_o,
   },
 ]
 

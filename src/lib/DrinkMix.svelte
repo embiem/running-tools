@@ -8,7 +8,10 @@
     isCompleteMixInput,
     normalizeMixInput,
   } from './drinkMix'
-  import type { MixInput, Preset, PresetId } from './drinkMix'
+  import type { MixInput, Preset, PresetId, Tonicity } from './drinkMix'
+  import type { Message } from './i18n.svelte'
+  import { formatFixed, formatPercent } from './format'
+  import { m } from '../paraglide/messages.js'
 
   const STORAGE_KEY = 'drinkMix.prefs'
 
@@ -22,6 +25,12 @@
 
   // Preset buttons follow the declaration order of PRESETS.
   const presetEntries = Object.entries(PRESETS) as [PresetId, Preset][]
+
+  const TONICITY: Record<Tonicity, Message> = {
+    hypotonic: m.drink_tonicity_hypotonic,
+    isotonic: m.drink_tonicity_isotonic,
+    hypertonic: m.drink_tonicity_hypertonic,
+  }
 
   let input = $state<MixInput>(loadInput())
   // One validated snapshot feeds everything: the engine result, the batch
@@ -66,13 +75,10 @@
   }
 </script>
 
-<section class="tool split" aria-label="Drink mix calculator">
+<section class="tool split" aria-label={m.drink_label()}>
   <div class="inputs">
-    <Panel
-      title="Your session"
-      hint="Pick the closest fit — the preset sets the carbohydrate and sodium targets the mix is built to hit."
-    >
-      <div class="presets" role="group" aria-label="Session preset">
+    <Panel title={m.drink_session_title()} hint={m.drink_session_hint()}>
+      <div class="presets" role="group" aria-label={m.drink_preset_group()}>
         {#each presetEntries as [id, preset] (id)}
           <button
             type="button"
@@ -80,23 +86,20 @@
             aria-pressed={input.preset === id}
             onclick={() => selectPreset(id)}
           >
-            {preset.label}
-            <span class="preset-tagline">{preset.tagline}</span>
+            {preset.label()}
+            <span class="preset-tagline">{preset.tagline()}</span>
           </button>
         {/each}
       </div>
       <p class="preset-hint">
-        {presetMeta.carbsGPerH} g carbs/h · {presetMeta.sodiumMgPerH} mg sodium/h
+        {m.drink_preset_targets({ carbs: presetMeta.carbsGPerH, sodium: presetMeta.sodiumMgPerH })}
       </p>
     </Panel>
 
-    <Panel
-      title="Your setup"
-      hint="What you carry and how much you drink — the mix is sized to that."
-    >
+    <Panel title={m.drink_setup_title()} hint={m.drink_setup_hint()}>
       <div class="fields">
         <label>
-          <span class="label-text">Session length</span>
+          <span class="label-text">{m.drink_duration()}</span>
           <span class="label-input">
             <input
               type="number"
@@ -104,14 +107,14 @@
               max={LIMITS.durationMin.max}
               step={LIMITS.durationMin.step}
               bind:value={input.durationMin}
-              aria-label="Session length in minutes"
+              aria-label={m.drink_duration_label()}
             />
-            <span class="unit">min</span>
+            <span class="unit">{m.unit_min()}</span>
           </span>
         </label>
 
         <label>
-          <span class="label-text">Bottle size</span>
+          <span class="label-text">{m.drink_bottle()}</span>
           <span class="label-input">
             <input
               type="number"
@@ -119,14 +122,14 @@
               max={LIMITS.bottleMl.max}
               step={LIMITS.bottleMl.step}
               bind:value={input.bottleMl}
-              aria-label="Bottle size in millilitres"
+              aria-label={m.drink_bottle_label()}
             />
             <span class="unit">ml</span>
           </span>
         </label>
 
         <label>
-          <span class="label-text">Bottles you carry</span>
+          <span class="label-text">{m.drink_bottles()}</span>
           <span class="label-input">
             <input
               type="number"
@@ -134,19 +137,16 @@
               max={LIMITS.bottles.max}
               step={LIMITS.bottles.step}
               bind:value={input.bottles}
-              aria-label="Number of bottles you carry"
+              aria-label={m.drink_bottles_label()}
             />
-            <span class="total">= {(result.carryMl / 1000).toFixed(2)} L total</span>
+            <span class="total">{m.drink_bottles_total({ litres: formatFixed(result.carryMl / 1000, 2) })}</span>
           </span>
         </label>
 
         <label>
           <span class="label-text">
-            Your fluid intake
-            <span class="hint">
-              Sweat rate is typically 0.5–2.0 L/h, higher in heat and at race pace — weigh yourself
-              before and after a run to find yours.
-            </span>
+            {m.drink_fluid()}
+            <span class="hint">{m.drink_fluid_hint()}</span>
           </span>
           <span class="label-input">
             <input
@@ -155,16 +155,16 @@
               max={LIMITS.fluidMlPerHour.max}
               step={LIMITS.fluidMlPerHour.step}
               bind:value={input.fluidMlPerHour}
-              aria-label="Your fluid intake in millilitres per hour"
+              aria-label={m.drink_fluid_label()}
             />
             <span class="unit">ml/h</span>
           </span>
         </label>
 
-        <div class="segmented stacked" role="radiogroup" aria-label="Salt you have">
+        <div class="segmented stacked" role="radiogroup" aria-label={m.drink_salt_group()}>
           <label>
             <input type="radio" name="saltSetup" value="table" bind:group={input.saltSetup} />
-            Table salt only
+            {m.drink_salt_table()}
           </label>
           <label>
             <input
@@ -173,17 +173,15 @@
               value="table-potassium"
               bind:group={input.saltSetup}
             />
-            Table salt + potassium-rich salt
+            {m.drink_salt_table_potassium()}
           </label>
         </div>
 
         {#if input.saltSetup === 'table-potassium'}
           <label>
             <span class="label-text">
-              Potassium in that salt
-              <span class="hint">
-                LoSalt ≈ 66 %, many reduced-sodium blends ≈ 30–50 %, your blend 33 %.
-              </span>
+              {m.drink_potassium()}
+              <span class="hint">{m.drink_potassium_hint()}</span>
             </span>
             <span class="label-input">
               <input
@@ -192,114 +190,129 @@
                 max={LIMITS.potassiumPct.max}
                 step={LIMITS.potassiumPct.step}
                 bind:value={input.potassiumPct}
-                aria-label="Percentage of potassium chloride in your potassium-rich salt"
+                aria-label={m.drink_potassium_label()}
               />
-              <span class="unit">% KCl</span>
+              <span class="unit">{m.drink_potassium_unit()}</span>
             </span>
           </label>
         {/if}
       </div>
     </Panel>
 
-    <button type="button" class="ghost reset" onclick={reset}>Reset to defaults</button>
+    <button type="button" class="ghost reset" onclick={reset}>{m.common_reset()}</button>
   </div>
 
   <div class="results">
-    <h2>The mix for {result.carryMl} ml</h2>
+    <h2>{m.drink_result_title({ ml: result.carryMl })}</h2>
     <div class="stats">
       <div class="stat hero">
-        <span class="eyebrow">Sugar</span>
-        <span class="stat-value">{result.sugarG.toFixed(1)}<small>g</small></span>
-        <span class="stat-sub">≈ {result.sugarTsp.toFixed(1)} tsp</span>
+        <span class="eyebrow">{m.drink_sugar()}</span>
+        <span class="stat-value">{formatFixed(result.sugarG, 1)}<small>g</small></span>
+        <span class="stat-sub">{m.drink_teaspoons({ tsp: formatFixed(result.sugarTsp, 1) })}</span>
       </div>
       <div class="stat">
-        <span class="eyebrow">Table salt</span>
-        <span class="stat-value">{result.tableSaltG.toFixed(2)}<small>g</small></span>
-        <span class="stat-sub">≈ {result.tableSaltTsp.toFixed(1)} tsp</span>
+        <span class="eyebrow">{m.drink_table_salt()}</span>
+        <span class="stat-value">{formatFixed(result.tableSaltG, 2)}<small>g</small></span>
+        <span class="stat-sub">{m.drink_teaspoons({ tsp: formatFixed(result.tableSaltTsp, 1) })}</span>
       </div>
       {#if input.saltSetup === 'table-potassium'}
         <div class="stat">
-          <span class="eyebrow">Potassium-rich salt</span>
-          <span class="stat-value">{result.potassiumSaltG.toFixed(2)}<small>g</small></span>
-          <span class="stat-sub">≈ {result.potassiumSaltTsp.toFixed(1)} tsp</span>
+          <span class="eyebrow">{m.drink_potassium_salt()}</span>
+          <span class="stat-value">{formatFixed(result.potassiumSaltG, 2)}<small>g</small></span>
+          <span class="stat-sub">{m.drink_teaspoons({ tsp: formatFixed(result.potassiumSaltTsp, 1) })}</span>
         </div>
       {/if}
   </div>
   <dl>
-    <dt>Water</dt>
+    <dt>{m.drink_water()}</dt>
     <dd>{result.carryMl} ml</dd>
-    <dt>Per {result.bottleMl} ml bottle</dt>
+    <dt>{m.drink_per_bottle({ ml: result.bottleMl })}</dt>
     <dd>
       {#if input.saltSetup === 'table-potassium'}
-        {(result.tableSaltG / result.bottles).toFixed(2)} g table salt +
-        {(result.potassiumSaltG / result.bottles).toFixed(2)} g potassium salt +
-        {(result.sugarG / result.bottles).toFixed(1)} g sugar
+        {m.drink_per_bottle_potassium({
+          tableSalt: formatFixed(result.tableSaltG / result.bottles, 2),
+          potassiumSalt: formatFixed(result.potassiumSaltG / result.bottles, 2),
+          sugar: formatFixed(result.sugarG / result.bottles, 1),
+        })}
       {:else}
-        {(result.tableSaltG / result.bottles).toFixed(2)} g table salt +
-        {(result.sugarG / result.bottles).toFixed(1)} g sugar
+        {m.drink_per_bottle_table({
+          tableSalt: formatFixed(result.tableSaltG / result.bottles, 2),
+          sugar: formatFixed(result.sugarG / result.bottles, 1),
+        })}
       {/if}
     </dd>
   </dl>
 
-  <h2>What you get</h2>
+  <h2>{m.drink_delivers_title()}</h2>
   <dl>
-    <dt>Sodium</dt>
-    <dd>{roundInt(result.sodiumMg)} mg ({result.sodiumMgPerL.toFixed(1)} mg/L)</dd>
-    <dt>Potassium</dt>
+    <dt>{m.drink_sodium()}</dt>
+    <dd>{m.drink_amount_mg({ mg: roundInt(result.sodiumMg), perLitre: formatFixed(result.sodiumMgPerL, 1) })}</dd>
+    <dt>{m.drink_potassium_title()}</dt>
     <dd>
       {#if input.saltSetup === 'table-potassium'}
-        {roundInt(result.potassiumMg)} mg ({result.potassiumMgPerL.toFixed(1)} mg/L)
+        {m.drink_amount_mg({ mg: roundInt(result.potassiumMg), perLitre: formatFixed(result.potassiumMgPerL, 1) })}
       {:else}
-        0 mg — none in table salt
+        {m.drink_no_potassium()}
       {/if}
     </dd>
-    <dt>Sodium : potassium</dt>
+    <dt>{m.drink_ratio()}</dt>
     <dd>
       {#if result.sodiumPotassiumRatio === null}
         —
       {:else}
-        {result.sodiumPotassiumRatio.toFixed(1)} : 1
+        {formatFixed(result.sodiumPotassiumRatio, 1)} : 1
       {/if}
     </dd>
-    <dt>Carbohydrate</dt>
+    <dt>{m.drink_carbohydrate()}</dt>
     <dd>
-      {result.carbsG.toFixed(1)} g ({result.carbsGPerL.toFixed(1)} g/L, {(result.carbsGPerL / 10).toFixed(1)}% solution)
+      {m.drink_carbs_amount({
+        g: formatFixed(result.carbsG, 1),
+        perLitre: formatFixed(result.carbsGPerL, 1),
+        solution: formatPercent(result.carbsGPerL / 10, 1),
+      })}
     </dd>
-    <dt>Energy</dt>
+    <dt>{m.drink_energy()}</dt>
     <dd>{roundInt(result.kcal)} kcal</dd>
-    <dt>Osmolality</dt>
+    <dt>{m.drink_osmolality()}</dt>
     <dd>
       {roundInt(result.osmolarityMOsmPerL)} mOsm/L
-      <span class="band {result.tonicity}">{result.tonicity}</span>
+      <span class="band {result.tonicity}">{TONICITY[result.tonicity]()}</span>
     </dd>
-    <dt>Covers your plan</dt>
+    <dt>{m.drink_coverage()}</dt>
     <dd>
-      sodium {result.sodiumCoveragePct}% · carbs {result.carbsCoveragePct}% · fluid {result.fluidCoveragePct}%
+      {m.drink_coverage_values({
+        sodium: formatPercent(result.sodiumCoveragePct),
+        carbs: formatPercent(result.carbsCoveragePct),
+        fluid: formatPercent(result.fluidCoveragePct),
+      })}
     </dd>
   </dl>
 
-  <h2>How to drink it</h2>
+  <h2>{m.drink_schedule_title()}</h2>
   <ul class="schedule">
     <li>
-      Drink one {result.bottleMl} ml bottle about every {roundInt(result.minutesPerBottle)} minutes.
+      {m.drink_schedule_bottle({ ml: result.bottleMl, minutes: roundInt(result.minutesPerBottle) })}
     </li>
-    <li>Sip roughly {result.sipMl} ml every {SIP_INTERVAL_MIN} minutes.</li>
+    <li>{m.drink_schedule_sip({ ml: result.sipMl, minutes: SIP_INTERVAL_MIN })}</li>
     {#if result.carryMl < result.needFluidMl}
       <li>
-        You carry {result.carryMl} ml but need about {roundInt(result.needFluidMl)} ml. Pick up the
-        remaining {result.shortfallFluidMl} ml at drink stations — about {result.stationSipMl} ml every
-        {SIP_INTERVAL_MIN} minutes — or carry an extra bottle.
+        {m.drink_schedule_stations({
+          carry: result.carryMl,
+          need: roundInt(result.needFluidMl),
+          short: result.shortfallFluidMl,
+          sip: result.stationSipMl,
+          minutes: SIP_INTERVAL_MIN,
+        })}
       </li>
     {/if}
     {#if result.shortfallCarbsG > 0}
       <li>
-        Add about {result.gelCount} gel(s) (25 g each) to reach the {presetMeta.carbsGPerH} g/h
-        carbohydrate target.
+        {m.drink_schedule_gels({ gels: result.gelCount, carbs: presetMeta.carbsGPerH })}
       </li>
     {/if}
     {#if result.shortfallSodiumMg > 0}
       <li>
-        Your bottles fall {result.shortfallSodiumMg} mg short of the sodium target for this session.
+        {m.drink_schedule_sodium_short({ mg: result.shortfallSodiumMg })}
       </li>
     {/if}
   </ul>
@@ -313,23 +326,10 @@
   {/if}
 
   <details class="info">
-    <summary>Where these numbers come from</summary>
-    <p>
-      Targets follow the ACSM position stand on exercise and fluid replacement — 500–700 mg of
-      sodium per litre and 600–1200 ml of fluid per hour for sessions over an hour, with 30–60 g of
-      carbohydrate per hour as a 4–8% solution — and the 2016 joint position stand (ACSM /
-      Dietitians of Canada / Academy of Nutrition and Dietetics), which raises carbohydrate to 30–90
-      g/h for longer sessions using multiple transportable carbohydrates. Sweat sodium varies from
-      about 17 to 92 mmol/L between runners, so the <em>Marathon</em> preset mixes at ~1150 mg/L (50
-      mmol/L) — as concentrated as drinkable, since palatability falls beyond that. Table salt is
-      ~393 mg sodium per gram; potassium chloride is ~524 mg potassium per gram, so a “reduced
-      sodium” blend that is 33 % KCl provides ~263 mg sodium and ~173 mg potassium per gram.
-    </p>
-    <p>
-      If you have kidney problems, or take ACE inhibitors, ARBs, potassium-sparing diuretics or other
-      medication that raises blood potassium, do not add a potassium-rich salt without medical advice.
-      Weigh ingredients on a 0.1 g scale — household teaspoons vary.
-    </p>
+    <summary>{m.common_sources()}</summary>
+    <!-- Messages are the app's own copy, not user input: safe as HTML. -->
+    <p>{@html m.drink_info_targets()}</p>
+    <p>{m.drink_info_medical()}</p>
   </details>
   </div>
 </section>

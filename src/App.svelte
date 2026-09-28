@@ -10,6 +10,9 @@
   import PWABadge from './lib/PWABadge.svelte'
   import Icon from './lib/Icon.svelte'
   import { TOOLS } from './lib/tools'
+  import { LANGUAGES, getLanguage, setLanguage } from './lib/i18n.svelte'
+  import type { Locale } from './lib/i18n.svelte'
+  import { m } from './paraglide/messages.js'
 
   // Hash routing: works from the precached service worker shell with zero
   // server-side rewrite config, so every route works fully offline as a PWA.
@@ -41,7 +44,7 @@
 
 <header class="topbar">
   <div class="shell bar">
-    <a class="brand" href="/#/" aria-label="running-tools home">
+    <a class="brand" href="/#/" aria-label={m.app_home_label()}>
       <span class="mark" aria-hidden="true">
         <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
           <path d="M4 17 10 7l4 7 3-5 3 8" />
@@ -49,19 +52,34 @@
       </span>
       <span class="wordmark">running<span>tools</span></span>
     </a>
-    <nav aria-label="Tools">
-      {#each TOOLS as tool (tool.route)}
-        <a
-          href="/#{tool.route}"
-          class:active={route === tool.route}
-          aria-current={route === tool.route ? 'page' : undefined}
-          title={tool.name}
+    <div class="end">
+      <nav aria-label={m.app_nav_label()}>
+        {#each TOOLS as tool (tool.route)}
+          <a
+            href="/#{tool.route}"
+            class:active={route === tool.route}
+            aria-current={route === tool.route ? 'page' : undefined}
+            title={tool.name()}
+          >
+            <Icon name={tool.icon} size={16} />
+            <span>{tool.short()}</span>
+          </a>
+        {/each}
+      </nav>
+      <!-- Each language by its own name; picking one re-renders in place. -->
+      <label class="language" title={m.app_language()}>
+        <Icon name="globe" size={16} />
+        <select
+          value={getLanguage()}
+          onchange={(event) => setLanguage(event.currentTarget.value as Locale)}
+          aria-label={m.app_language()}
         >
-          <Icon name={tool.icon} size={16} />
-          <span>{tool.short}</span>
-        </a>
-      {/each}
-    </nav>
+          {#each LANGUAGES as language (language.id)}
+            <option value={language.id} lang={language.id}>{language.name}</option>
+          {/each}
+        </select>
+      </label>
+    </div>
   </div>
 </header>
 
@@ -125,6 +143,12 @@
     margin-left: 0.15em;
   }
 
+  .end {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
   nav {
     display: none;
     gap: 0.25rem;
@@ -152,6 +176,51 @@
     background: var(--surface-2);
   }
 
+  .language {
+    position: relative;
+    display: flex;
+    align-items: center;
+    color: var(--muted);
+  }
+
+  .language:hover,
+  .language:focus-within {
+    color: var(--text);
+  }
+
+  .language :global(svg) {
+    position: absolute;
+    left: 0.6rem;
+    pointer-events: none;
+  }
+
+  /* A native select (accessible, and the phone's own picker on touch) dressed
+     as one of the nav pills: globe inside on the left, no browser chrome. */
+  select {
+    appearance: none;
+    -webkit-appearance: none;
+    /* 2rem tall, like the brand mark: the picker must not grow the bar. */
+    height: 2rem;
+    padding: 0 0.75rem 0 1.95rem;
+    border: 1px solid var(--border-strong);
+    border-radius: 999px;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  select:hover {
+    border-color: var(--text);
+  }
+
+  option {
+    background: var(--surface);
+    color: var(--text);
+  }
+
   /* Icons only until the labels fit; the label stays for screen readers. */
   nav a span {
     position: absolute;
@@ -168,7 +237,9 @@
     }
   }
 
-  @media (min-width: 62rem) {
+  /* 70rem: the widest language (German, Spanish) fits brand, labelled nav
+     and the language picker. */
+  @media (min-width: 70rem) {
     nav a span {
       position: static;
       width: auto;

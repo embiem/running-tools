@@ -5,6 +5,8 @@
   import type { Workout, WorkoutId } from './workouts'
   import { workoutPlayer } from './workoutPlayer'
   import type { PlayerPhase } from './workoutPlayer'
+  import type { Message } from './i18n.svelte'
+  import { m } from '../paraglide/messages.js'
 
   const SELECTION_KEY = 'workout.selection'
 
@@ -64,17 +66,27 @@
   })
 
   const toggleLabel = $derived(
-    phase === 'running' ? 'Pause' : phase === 'paused' ? 'Resume' : phase === 'done' ? 'Play again' : 'Play',
+    phase === 'running'
+      ? m.workouts_pause()
+      : phase === 'paused'
+        ? m.workouts_resume()
+        : phase === 'done'
+          ? m.workouts_play_again()
+          : m.workouts_play(),
   )
   const toggleAria = $derived(
     phase === 'running'
-      ? 'Pause workout'
+      ? m.workouts_pause_label()
       : phase === 'paused'
-        ? 'Resume workout'
+        ? m.workouts_resume_label()
         : phase === 'done'
-          ? 'Play workout again'
-          : 'Play workout',
+          ? m.workouts_play_again_label()
+          : m.workouts_play_label(),
   )
+  const CHOOSE_LABEL: Record<WorkoutId, Message> = {
+    'warm-up': m.workouts_choose_warm_up,
+    stretch: m.workouts_choose_stretch,
+  }
   const isCurrent = (i: number) => phase !== 'idle' && i === stepIndex
 
   // Selection changes imperatively here (never via an engine-pushing $effect):
@@ -107,21 +119,19 @@
   }
 </script>
 
-<section class="tool narrow" aria-label="Guided workouts">
+<section class="tool narrow" aria-label={m.workouts_label()}>
   {#if !selected}
-    <Panel title="Choose your session" hint="Two guided workouts with a spoken coach.">
+    <Panel title={m.workouts_choose_title()} hint={m.workouts_choose_hint()}>
       {#each WORKOUTS as w (w.id)}
-        <button
-          class="option"
-          aria-label={`Choose the ${w.title.toLowerCase()} workout`}
-          onclick={() => choose(w.id)}
-        >
+        <button class="option" aria-label={CHOOSE_LABEL[w.id]()} onclick={() => choose(w.id)}>
           <span class="option-text">
-            <strong>{w.title}</strong>
-            <span>{w.blurb}</span>
+            <strong>{w.title()}</strong>
+            <span>{w.blurb()}</span>
             <span class="meta">
-              About {Math.round(totalDurationSec(w) / 60)} min ·
-              {w.steps.filter((s) => s.kind === 'exercise').length} exercises
+              {m.workouts_option_meta({
+                minutes: Math.round(totalDurationSec(w) / 60),
+                exercises: w.steps.filter((s) => s.kind === 'exercise').length,
+              })}
             </span>
           </span>
           <span class="option-go" aria-hidden="true">▶</span>
@@ -130,26 +140,26 @@
     </Panel>
   {:else}
     <div class="deck" class:live={phase === 'running'}>
-      <p class="eyebrow">{workout?.title ?? ''}</p>
+      <p class="eyebrow">{workout?.title() ?? ''}</p>
       <p class="now">
         {#if phase === 'done'}
-          Session complete
+          {m.workouts_complete()}
         {:else if phase !== 'idle' && currentStep}
-          {currentStep.name}
+          {currentStep.name()}
         {:else}
-          Ready when you are
+          {m.workouts_ready()}
         {/if}
       </p>
 
       <div class="clocks">
         <div>
           <span class="clock display" role="timer">{formatClock(totalElapsedSec)}</span>
-          <span class="clock-label">elapsed</span>
+          <span class="clock-label">{m.workouts_elapsed()}</span>
         </div>
         {#if phase !== 'idle' && phase !== 'done' && currentStep}
           <div class="right">
             <span class="clock display">{formatClock(stepRemainingSec)}</span>
-            <span class="clock-label">this step</span>
+            <span class="clock-label">{m.workouts_this_step()}</span>
           </div>
         {/if}
       </div>
@@ -157,7 +167,7 @@
       <div
         class="progress"
         role="progressbar"
-        aria-label="Workout progress"
+        aria-label={m.workouts_progress()}
         aria-valuemin="0"
         aria-valuemax="100"
         aria-valuenow={Math.round(progressPct)}
@@ -170,17 +180,17 @@
           {toggleLabel}
         </button>
         {#if phase !== 'idle'}
-          <button class="ghost" onclick={reset}>Reset</button>
+          <button class="ghost" onclick={reset}>{m.workouts_reset()}</button>
         {/if}
       </div>
 
       {#if phase === 'done'}
-        <p class="done-note" role="status">Nice work — session complete.</p>
+        <p class="done-note" role="status">{m.workouts_done_note()}</p>
       {/if}
     </div>
 
     <p class="overview">
-      About {minutes} minutes · {exerciseCount} exercises · spoken coaching, so keep your sound on
+      {m.workouts_overview({ minutes, exercises: exerciseCount })}
     </p>
 
     <ol class="steps">
@@ -195,19 +205,19 @@
             <details open={phase === 'running' && stepIndex === row.i}>
               <summary>
                 <span class="num">{row.number}</span>
-                <span class="name">{row.step.name}</span>
-                <span class="dur">{row.step.durationSec}s</span>
+                <span class="name">{row.step.name()}</span>
+                <span class="dur">{m.unit_seconds({ seconds: row.step.durationSec })}</span>
               </summary>
-              <p>{row.step.description}</p>
+              <p>{row.step.description()}</p>
             </details>
           {:else}
-            {row.step.name} · {row.step.durationSec}s
+            {row.step.name()} · {m.unit_seconds({ seconds: row.step.durationSec })}
           {/if}
         </li>
       {/each}
     </ol>
 
-    <button class="ghost back" onclick={chooseAnother}>← Choose another workout</button>
+    <button class="ghost back" onclick={chooseAnother}>{m.workouts_choose_another()}</button>
   {/if}
 </section>
 
