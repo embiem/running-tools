@@ -25,7 +25,7 @@
             <div class="meta">
               <h3>{video.title}</h3>
               <p class="channel">
-                {video.channel}{#if video.minutes}&nbsp;· {video.minutes} min{/if}
+                {[video.channel, video.minutes && `${video.minutes} min`].filter(Boolean).join(' · ')}
               </p>
               <p class="why">{video.why}</p>
               <a href="https://www.youtube.com/watch?v={video.id}" target="_blank" rel="noopener noreferrer">

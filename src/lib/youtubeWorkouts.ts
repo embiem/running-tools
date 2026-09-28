@@ -20,7 +20,8 @@ export interface YouTubeWorkout {
   /** The 11-character YouTube video id. */
   id: string
   title: string
-  channel: string
+  /** Channel name, when it could be confirmed. */
+  channel?: string
   category: VideoCategory
   /** Length in minutes, when the video states it. */
   minutes?: number
@@ -70,6 +71,13 @@ export const YOUTUBE_WORKOUTS: YouTubeWorkout[] = [
     why: 'A compact, moving (not held) sequence from one of the best-loved yoga channels on YouTube. Friendly to beginners.',
   },
   {
+    id: '3WUtJxLv-wI',
+    title: '5 Minute Warm-Up You NEED before EVERY RUN',
+    category: 'warm-up',
+    minutes: 5,
+    why: 'A no-equipment dynamic warm-up done in real time, aimed at getting you out the door ready and running pain-free.',
+  },
+  {
     id: 'BylKeXx0fbc',
     title: 'Yoga For Runners | 10 Minute Post Run Stretch',
     channel: 'Live Free Warrior',
@@ -83,6 +91,14 @@ export const YOUTUBE_WORKOUTS: YouTubeWorkout[] = [
     channel: 'Yoga With Adriene',
     category: 'stretch',
     why: 'A longer release-and-recover practice for after a run, with the calm, clear cueing the channel is known for.',
+  },
+  {
+    id: 'FbmLx-PahO4',
+    title: '10 Min. Post-Run Stretch | Simple Cool Down after Running',
+    channel: 'Mady Morrison',
+    category: 'stretch',
+    minutes: 10,
+    why: 'Yoga-inspired cool-down for glutes, quads, hamstrings and hips, then spine and side body. Needs only a mat.',
   },
   {
     id: 'pe9v9uiUujQ',
