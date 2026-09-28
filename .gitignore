@@ -23,6 +23,3 @@ dev-dist
 *.njsproj
 *.sln
 *.sw?
-
-# npm run snapshots output (screenshots + text dumps, compared locally)
-snapshots
