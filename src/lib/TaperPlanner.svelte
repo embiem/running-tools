@@ -93,141 +93,147 @@
   }
 </script>
 
-<section class="tool" aria-label="Taper planner">
-  <Panel
-    title="Your race"
-    hint="The date and distance you are tapering for — the plan counts back from race day."
-  >
-    <div class="fields">
-      <label>
-        <span class="label-text">Race date</span>
-        <span class="label-input">
-          <input type="date" bind:value={input.raceDate} aria-label="Race date" />
-        </span>
-      </label>
-
-      <label>
-        <span class="label-text">Distance</span>
-        <span class="label-input">
-          <select bind:value={input.distance} aria-label="Race distance">
-            {#each distanceEntries as [id, preset] (id)}
-              <option value={id}>{preset.label}</option>
-            {/each}
-          </select>
-        </span>
-      </label>
-
-      {#if effective.distance === 'custom'}
+<section class="tool split" aria-label="Taper planner">
+  <div class="inputs">
+    <Panel
+      title="Your race"
+      hint="The date and distance you are tapering for — the plan counts back from race day."
+    >
+      <div class="fields">
         <label>
-          <span class="label-text">Custom distance</span>
+          <span class="label-text">Race date</span>
+          <span class="label-input">
+            <input type="date" bind:value={input.raceDate} aria-label="Race date" />
+          </span>
+        </label>
+
+        <label>
+          <span class="label-text">Distance</span>
+          <span class="label-input">
+            <select bind:value={input.distance} aria-label="Race distance">
+              {#each distanceEntries as [id, preset] (id)}
+                <option value={id}>{preset.label}</option>
+              {/each}
+            </select>
+          </span>
+        </label>
+
+        {#if effective.distance === 'custom'}
+          <label>
+            <span class="label-text">Custom distance</span>
+            <span class="label-input">
+              <input
+                type="number"
+                min={LIMITS.customMeters.min}
+                max={LIMITS.customMeters.max}
+                step={LIMITS.customMeters.step}
+                bind:value={input.customMeters}
+                aria-label="Custom race distance in metres"
+              />
+              <span class="unit">m</span>
+            </span>
+          </label>
+        {/if}
+
+        <div class="segmented" role="radiogroup" aria-label="Distance unit">
+          <label>
+            <input
+              type="radio"
+              name="unit"
+              value="km"
+              checked={effective.unit === 'km'}
+              onchange={() => setUnit('km')}
+            /> Kilometres
+          </label>
+          <label>
+            <input
+              type="radio"
+              name="unit"
+              value="mi"
+              checked={effective.unit === 'mi'}
+              onchange={() => setUnit('mi')}
+            /> Miles
+          </label>
+        </div>
+      </div>
+    </Panel>
+
+    <Panel
+      title="Your training"
+      hint="A normal week and how you split it — the taper cuts this volume, not your run count."
+    >
+      <div class="fields">
+        <label>
+          <span class="label-text">
+            Normal training week
+            <span class="hint">Your average weekly distance in the weeks before the taper.</span>
+          </span>
           <span class="label-input">
             <input
               type="number"
-              min={LIMITS.customMeters.min}
-              max={LIMITS.customMeters.max}
-              step={LIMITS.customMeters.step}
-              bind:value={input.customMeters}
-              aria-label="Custom race distance in metres"
+              min={weeklyBounds.min}
+              max={weeklyBounds.max}
+              step={weeklyBounds.step}
+              bind:value={input.weeklyDistance}
+              aria-label="Normal weekly distance"
             />
-            <span class="unit">m</span>
+            <span class="unit">{effective.unit}</span>
           </span>
         </label>
-      {/if}
 
-      <div class="choice" role="radiogroup" aria-label="Distance unit">
         <label>
-          <input
-            type="radio"
-            name="unit"
-            value="km"
-            checked={effective.unit === 'km'}
-            onchange={() => setUnit('km')}
-          /> Kilometres
+          <span class="label-text">
+            Runs per week
+            <span class="hint">Unchanged by the taper — the runs get shorter, not fewer.</span>
+          </span>
+          <span class="label-input">
+            <input
+              type="number"
+              min={LIMITS.runsPerWeek.min}
+              max={LIMITS.runsPerWeek.max}
+              step={LIMITS.runsPerWeek.step}
+              bind:value={input.runsPerWeek}
+              aria-label="Runs per week"
+            />
+          </span>
         </label>
-        <label>
-          <input
-            type="radio"
-            name="unit"
-            value="mi"
-            checked={effective.unit === 'mi'}
-            onchange={() => setUnit('mi')}
-          /> Miles
-        </label>
+
+        <div class="segmented" role="radiogroup" aria-label="Taper length">
+          {#each TAPER_WEEKS_OPTIONS as weeks (weeks)}
+            <label>
+              <input type="radio" name="taperWeeks" value={weeks} bind:group={input.taperWeeks} />
+              {weeks} weeks
+            </label>
+          {/each}
+        </div>
+        <p class="preset-hint">
+          {result.weeks.map((week) => `${week.pctOfNormal}%`).join(' · ')} of your normal week
+        </p>
       </div>
-    </div>
-  </Panel>
+    </Panel>
 
-  <Panel
-    title="Your training"
-    hint="A normal week and how you split it — the taper cuts this volume, not your run count."
-  >
-    <div class="fields">
-      <label>
-        <span class="label-text">
-          Normal training week
-          <span class="hint">Your average weekly distance in the weeks before the taper.</span>
-        </span>
-        <span class="label-input">
-          <input
-            type="number"
-            min={weeklyBounds.min}
-            max={weeklyBounds.max}
-            step={weeklyBounds.step}
-            bind:value={input.weeklyDistance}
-            aria-label="Normal weekly distance"
-          />
-          <span class="unit">{effective.unit}</span>
-        </span>
-      </label>
+    <button type="button" class="ghost reset" onclick={reset}>Reset to defaults</button>
+  </div>
 
-      <label>
-        <span class="label-text">
-          Runs per week
-          <span class="hint">Unchanged by the taper — the runs get shorter, not fewer.</span>
-        </span>
-        <span class="label-input">
-          <input
-            type="number"
-            min={LIMITS.runsPerWeek.min}
-            max={LIMITS.runsPerWeek.max}
-            step={LIMITS.runsPerWeek.step}
-            bind:value={input.runsPerWeek}
-            aria-label="Runs per week"
-          />
-        </span>
-      </label>
-
-      <div class="choice" role="radiogroup" aria-label="Taper length">
-        {#each TAPER_WEEKS_OPTIONS as weeks (weeks)}
-          <label>
-            <input type="radio" name="taperWeeks" value={weeks} bind:group={input.taperWeeks} />
-            {weeks} weeks
-          </label>
-        {/each}
+  <div class="results">
+    <h2>Taper window</h2>
+    <div class="stats">
+      <div class="stat hero">
+        <span class="eyebrow">Taper starts</span>
+        <span class="stat-value">{formatDay(result.taperStartDate)}</span>
+        <span class="stat-sub">{result.taperDays} days before the race</span>
       </div>
-      <p class="preset-hint">
-        {result.weeks.map((week) => `${week.pctOfNormal}%`).join(' · ')} of your normal week
-      </p>
-    </div>
-  </Panel>
-
-  <button type="button" class="reset" onclick={reset}>Reset to defaults</button>
-
-  <h2>Taper window</h2>
+      <div class="stat">
+        <span class="eyebrow">Volume cut</span>
+        <span class="stat-value">{result.totalReductionPct}<small>%</small></span>
+        <span class="stat-sub">over the taper · optimum 41–60%</span>
+      </div>
+  </div>
   <dl>
     <dt>Race</dt>
     <dd>{distance.label} · {fmt(result.raceMeters)} · {formatDay(result.raceDate)}</dd>
-    <dt>Taper starts</dt>
-    <dd>
-      {formatDay(result.taperStartDate)}
-      <span class="muted">({result.taperDays} days before the race)</span>
-    </dd>
     <dt>Normal week</dt>
     <dd>{fmt(result.normalWeeklyMeters)}</dd>
-    <dt>Volume cut</dt>
-    <dd>
-      {result.totalReductionPct}% <span class="muted">over the taper · optimum 41–60%</span>
-    </dd>
   </dl>
 
   <h2>Week by week</h2>
@@ -249,7 +255,7 @@
           <tr
             class:past={day.date < today}
             class:today={day.date === today}
-            class:race={day.kind === 'race'}
+            class:highlight={day.kind === 'race'}
           >
             <th scope="row">{formatDay(day.date)}</th>
             <td>{SESSION_LABELS[day.kind]}</td>
@@ -305,215 +311,69 @@
       keep the intensity the papers insist on.
     </p>
   </details>
+  </div>
 </section>
 
 <style>
-  .tool {
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    gap: 1rem;
-    width: min(34rem, 100%);
-    margin: 0 auto;
-    text-align: left;
-  }
-
-  h2 {
-    margin: 0.5rem 0 -0.5rem;
-    font-size: 1rem;
-    font-weight: 600;
-    opacity: 0.85;
-  }
-
-  .fields {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-  }
-
-  .fields label {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.5rem;
-  }
-
-  .label-input {
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-    flex: none;
-    margin-left: auto;
-  }
-
-  input[type='number'],
-  input[type='date'],
-  select {
-    padding: 0.3rem 0.5rem;
-    border: 1px solid rgba(128, 128, 128, 0.4);
-    border-radius: 6px;
-    background: rgba(128, 128, 128, 0.12);
-    color: inherit;
-    font: inherit;
-  }
-
-  input[type='number'],
-  input[type='date'] {
-    font-variant-numeric: tabular-nums;
-    text-align: right;
-  }
-
-  input[type='number'] {
-    width: 6rem;
-  }
-
-  input[type='radio'] {
-    accent-color: #646cff;
-  }
-
-  .unit,
-  .muted {
-    color: #888;
-    font-size: 0.85rem;
-  }
-
-  .hint {
-    display: block;
-    font-size: 0.8rem;
-    opacity: 0.7;
-  }
-
-  .choice {
-    display: flex;
-    flex-direction: column;
-    gap: 0.35rem;
-    font-size: 0.9rem;
-  }
-
-  .choice label {
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-    gap: 0.5rem;
+  .reset {
+    align-self: flex-start;
   }
 
   .preset-hint {
-    margin: -0.5rem 0 0;
+    margin: -0.25rem 0 0;
     font-size: 0.85rem;
     text-align: center;
-    color: #888;
-  }
-
-  .reset {
-    align-self: flex-start;
-    font-size: 0.85rem;
-    padding: 0.4em 0.9em;
-  }
-
-  dl {
-    display: grid;
-    grid-template-columns: auto 1fr;
-    gap: 0.35rem 1rem;
-    margin: 0;
-    text-align: left;
-  }
-
-  dt {
-    opacity: 0.75;
-  }
-
-  dd {
-    margin: 0;
+    color: var(--muted);
     font-variant-numeric: tabular-nums;
   }
 
+  /* Fixed columns so every week's table lines up with the one above it. */
   table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.9rem;
-    font-variant-numeric: tabular-nums;
+    margin-top: 0.25rem;
+    table-layout: fixed;
+  }
+
+  thead th:nth-child(1) {
+    width: 32%;
+  }
+
+  thead th:nth-child(3) {
+    width: 22%;
   }
 
   caption {
-    padding: 0.4rem 0 0.3rem;
+    padding: 0 0 0.4rem;
     text-align: left;
   }
 
   .week-title {
     display: block;
-    font-weight: 600;
+    font-weight: 700;
+    font-size: 1.05rem;
   }
 
   .week-meta {
     display: block;
     font-size: 0.8rem;
-    color: #888;
-  }
-
-  th,
-  td {
-    padding: 0.3rem 0.5rem;
-    text-align: left;
-    border-bottom: 1px solid rgba(128, 128, 128, 0.2);
-  }
-
-  tbody th {
-    font-weight: 400;
-    opacity: 0.85;
-    white-space: nowrap;
-  }
-
-  th:last-child,
-  td:last-child {
-    text-align: right;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
   }
 
   tr.past {
-    opacity: 0.45;
+    opacity: 0.4;
   }
 
-  tr.today {
-    background: rgba(100, 108, 255, 0.12);
-  }
-
-  tr.race th,
-  tr.race td {
-    font-weight: 600;
-    color: #646cff;
-  }
-
-  .flags {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    font-size: 0.85rem;
-  }
-
-  .flag {
-    padding: 0.5rem 0.75rem;
-    border-left: 3px solid #888;
-    background: rgba(128, 128, 128, 0.12);
-    margin-bottom: 0.5rem;
-    border-radius: 0 6px 6px 0;
-  }
-
-  .flag.warn {
-    border-left-color: #f85149;
-  }
-
-  .info {
-    font-size: 0.9rem;
-  }
-
-  .info summary {
-    cursor: pointer;
-    color: #646cff;
-    font-weight: 500;
-  }
-
-  .info p {
-    margin: 0.5rem 0 0;
-    opacity: 0.85;
+  tr.today th::after {
+    content: 'Today';
+    margin-left: 0.5rem;
+    padding: 0.05rem 0.45rem;
+    border-radius: 999px;
+    background: var(--accent);
+    color: var(--on-accent);
+    font-size: 0.65rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    vertical-align: 0.1em;
   }
 </style>

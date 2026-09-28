@@ -55,45 +55,50 @@
   }
 </script>
 
-<section aria-label="Cadence metronome">
-  <p class="bpm-display">
-    <span class="bpm-value">{bpm}</span>
-    <span class="bpm-unit">steps/min</span>
-  </p>
+<section class="tool narrow" aria-label="Cadence metronome">
+  <div class="dial" class:running>
+    <p class="eyebrow">Cadence</p>
+    <p class="bpm-display">
+      <span class="bpm-value display">{bpm}</span>
+      <span class="bpm-unit">steps/min</span>
+    </p>
 
-  <div class="controls">
-    <button type="button" onclick={() => adjust(-STEP)} aria-label="Decrease cadence">
-      −{STEP}
+    <div class="controls">
+      <button type="button" class="step" onclick={() => adjust(-STEP)} aria-label="Decrease cadence">
+        −{STEP}
+      </button>
+      <input
+        type="range"
+        min={MIN_BPM}
+        max={MAX_BPM}
+        step={1}
+        bind:value={bpm}
+        style:--fill="{((bpm - MIN_BPM) / (MAX_BPM - MIN_BPM)) * 100}%"
+        aria-label="Cadence in steps per minute"
+      />
+      <button type="button" class="step" onclick={() => adjust(STEP)} aria-label="Increase cadence">
+        +{STEP}
+      </button>
+    </div>
+
+    <button type="button" class="toggle" class:primary={!running} onclick={toggle}>
+      {running ? 'Stop' : 'Start'}
     </button>
-    <input
-      type="range"
-      min={MIN_BPM}
-      max={MAX_BPM}
-      step={1}
-      bind:value={bpm}
-      aria-label="Cadence in steps per minute"
-    />
-    <button type="button" onclick={() => adjust(STEP)} aria-label="Increase cadence">
-      +{STEP}
-    </button>
-  </div>
 
-  <div class="volume">
-    <label for="click-volume">Volume</label>
-    <input
-      id="click-volume"
-      type="range"
-      min="0"
-      max="1"
-      step="0.05"
-      bind:value={volume}
-    />
-    <span class="volume-value">{Math.round(volume * 100)}%</span>
+    <div class="volume">
+      <label for="click-volume">Volume</label>
+      <input
+        id="click-volume"
+        type="range"
+        min="0"
+        max="1"
+        step="0.05"
+        bind:value={volume}
+        style:--fill="{volume * 100}%"
+      />
+      <span class="volume-value">{Math.round(volume * 100)}%</span>
+    </div>
   </div>
-
-  <button type="button" class="toggle" onclick={toggle}>
-    {running ? 'Stop' : 'Start'}
-  </button>
 
   <details class="info">
     <summary>Why does cadence matter?</summary>
@@ -112,79 +117,92 @@
 </section>
 
 <style>
-  section {
+  .dial {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 1rem;
+    gap: 1.25rem;
+    padding: 2rem 1.25rem 1.5rem;
+    border-radius: 28px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+    text-align: center;
+    transition: border-color 0.3s;
+  }
+
+  .dial.running {
+    border-color: var(--accent-text);
+    box-shadow:
+      var(--shadow),
+      0 0 0 4px var(--accent-soft);
   }
 
   .bpm-display {
-    margin: 0;
-    line-height: 1;
+    margin: -0.5rem 0 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.4rem;
   }
 
   .bpm-value {
-    font-size: 4rem;
-    font-weight: 700;
-    font-variant-numeric: tabular-nums;
+    font-size: clamp(6.5rem, 30vw, 10rem);
+  }
+
+  .running .bpm-value {
+    color: var(--accent-text);
   }
 
   .bpm-unit {
-    margin-left: 0.5rem;
-    color: #888;
+    color: var(--muted);
+    font-weight: 600;
   }
 
-  .controls {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    width: min(24rem, 100%);
-  }
-
-  input[type='range'] {
-    flex: 1;
-    accent-color: #646cff;
-  }
-
+  .controls,
   .volume {
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    width: min(24rem, 100%);
+    width: 100%;
   }
 
-  .volume label {
-    font-size: 0.9rem;
-    color: #888;
+  input[type='range'] {
+    flex: 1;
+    min-width: 0;
   }
 
-  .volume-value {
-    min-width: 2.5rem;
-    text-align: right;
-    font-size: 0.9rem;
+  .step {
+    flex: none;
+    width: 3.25rem;
+    height: 3.25rem;
+    padding: 0;
     font-variant-numeric: tabular-nums;
-    color: #888;
   }
 
   .toggle {
-    min-width: 8rem;
+    width: 100%;
+    padding: 1rem;
+    font-size: 1.15rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
   }
 
-  .info {
-    width: min(28rem, 100%);
-    text-align: left;
-    font-size: 0.9rem;
+  .volume {
+    padding-top: 1rem;
+    border-top: 1px solid var(--border);
   }
 
-  .info summary {
-    cursor: pointer;
-    color: #646cff;
-    font-weight: 500;
+  .volume label,
+  .volume-value {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--muted);
   }
 
-  .info p {
-    margin: 0.5rem 0 0;
-    opacity: 0.85;
+  .volume-value {
+    min-width: 2.75rem;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
   }
 </style>

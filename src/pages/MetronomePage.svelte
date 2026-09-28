@@ -1,14 +1,8 @@
 <script lang="ts">
+  import ToolPage from '../lib/ToolPage.svelte'
   import Metronome from '../lib/Metronome.svelte'
 </script>
 
-<main>
-  <h1>Cadence Metronome</h1>
-
-  <a class="back" href="/#/">← All tools</a>
-
-  <div class="card">
-    <Metronome />
-  </div>
-
-</main>
+<ToolPage narrow route="/metronome">
+  <Metronome />
+</ToolPage>

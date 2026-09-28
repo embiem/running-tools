@@ -66,11 +66,11 @@
     </div>
     <div class="buttons">
       {#if $needRefresh}
-        <button type="button" onclick={() => updateServiceWorker(true)}>
+        <button type="button" class="primary" onclick={() => updateServiceWorker(true)}>
           Reload
         </button>
       {/if}
-      <button type="button" onclick={close}>
+      <button type="button" class="ghost" onclick={close}>
         Close
       </button>
     </div>
@@ -82,26 +82,21 @@
     position: fixed;
     right: 0;
     bottom: 0;
-    margin: 16px;
-    padding: 12px;
-    border: 1px solid #8885;
-    border-radius: 4px;
-    z-index: 2;
-    text-align: left;
-    box-shadow: 3px 4px 5px 0 #8885;
-    background-color: white;
+    z-index: 10;
+    max-width: 22rem;
+    margin: 1rem;
+    padding: 1rem 1.1rem;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius);
+    background: var(--surface);
+    box-shadow: var(--shadow);
+    font-size: 0.92rem;
   }
   .pwa-toast .message {
-    margin-bottom: 8px;
+    margin-bottom: 0.75rem;
   }
   .pwa-toast .buttons {
     display: flex;
-  }
-  .pwa-toast button {
-    border: 1px solid #8885;
-    outline: none;
-    margin-right: 5px;
-    border-radius: 2px;
-    padding: 3px 10px;
+    gap: 0.5rem;
   }
 </style>
