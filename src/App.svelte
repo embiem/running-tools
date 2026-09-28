@@ -5,6 +5,7 @@
   import TaperPlannerPage from './pages/TaperPlannerPage.svelte'
   import RacePredictorPage from './pages/RacePredictorPage.svelte'
   import WorkoutsPage from './pages/WorkoutsPage.svelte'
+  import YouTubeWorkoutsPage from './pages/YouTubeWorkoutsPage.svelte'
   import PWABadge from './lib/PWABadge.svelte'
   import Icon from './lib/Icon.svelte'
   import { TOOLS } from './lib/tools'
@@ -18,6 +19,7 @@
     '/taper-planner': TaperPlannerPage,
     '/race-predictor': RacePredictorPage,
     '/workouts': WorkoutsPage,
+    '/youtube-workouts': YouTubeWorkoutsPage,
   }
 
   function currentRoute(): keyof typeof routes {

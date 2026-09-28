@@ -1,6 +1,7 @@
 <script lang="ts">
   import Icon from '../lib/Icon.svelte'
   import { TOOLS } from '../lib/tools'
+  import { YOUTUBE_WORKOUTS } from '../lib/youtubeWorkouts'
 
   // The metronome tile shows the cadence you last set, so the home grid reads
   // like a dashboard rather than a menu. Same key and bounds as Metronome.svelte.
@@ -20,6 +21,7 @@
     '/taper-planner': { value: '−50%', unit: 'volume, tapered' },
     '/drink-mix': { value: '3', unit: 'ingredients' },
     '/workouts': { value: '2', unit: 'narrated sessions' },
+    '/youtube-workouts': { value: String(YOUTUBE_WORKOUTS.length), unit: 'hand-picked videos' },
   }
 </script>
 
@@ -28,8 +30,8 @@
     <p class="eyebrow">Offline-ready · no account · no tracking</p>
     <h1 class="display">Tools for <span>runners</span></h1>
     <p class="lede">
-      Small, focused utilities for training and racing. Install it once and every tool keeps working
-      without a signal.
+      Small, focused utilities for training and racing. Install it once and the tools keep working
+      without a signal — only the YouTube picks need one.
     </p>
   </section>
 
@@ -94,6 +96,11 @@
     .feature {
       grid-column: span 2;
     }
+
+    /* Two tiles a row after the feature: an odd one out takes the full row. */
+    .bento li:last-child:nth-child(even) {
+      grid-column: span 2;
+    }
   }
 
   @media (min-width: 60rem) {
@@ -101,7 +108,7 @@
       grid-template-columns: repeat(6, 1fr);
     }
 
-    /* Feature tile left over two rows, two wide tiles beside it, two halves below. */
+    /* Feature tile left over two rows, two wide tiles beside it, three thirds below. */
     .bento li.feature {
       grid-column: span 2;
       grid-row: span 2;
@@ -112,9 +119,8 @@
       grid-column: span 4;
     }
 
-    .bento li:nth-child(4),
-    .bento li:nth-child(5) {
-      grid-column: span 3;
+    .bento li:nth-child(n + 4) {
+      grid-column: span 2;
     }
   }
 
