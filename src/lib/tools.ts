@@ -36,6 +36,13 @@ export const TOOLS: Tool[] = [
     icon: 'taper',
   },
   {
+    route: '/race-fuel',
+    name: m.tool_race_fuel_name,
+    short: m.tool_race_fuel_short,
+    description: m.tool_race_fuel_description,
+    icon: 'fork',
+  },
+  {
     route: '/drink-mix',
     name: m.tool_drink_mix_name,
     short: m.tool_drink_mix_short,
