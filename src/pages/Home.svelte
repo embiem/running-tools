@@ -23,6 +23,7 @@
     '/metronome': { value: String(cadence), unit: m.unit_steps_per_min() },
     '/race-predictor': { value: m.home_stat_race_value(), unit: m.home_stat_race_unit() },
     '/taper-planner': { value: m.home_stat_taper_value(), unit: m.home_stat_taper_unit() },
+    '/race-fuel': { value: m.home_stat_fuel_value(), unit: m.home_stat_fuel_unit() },
     '/drink-mix': { value: '3', unit: m.home_stat_drink_unit() },
     '/workouts': { value: '2', unit: m.home_stat_workouts_unit() },
     '/youtube-workouts': { value: String(YOUTUBE_WORKOUTS.length), unit: m.home_stat_youtube_unit() },

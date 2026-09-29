@@ -53,6 +53,15 @@ export function formatPercent(value: number, digits = 0): string {
 }
 
 /**
+ * A time of day from minutes after midnight, in the locale's clock: "6:00 AM"
+ * (en-US), "06:00" (de, en-GB). Built from a fixed date, so no DST shift.
+ */
+export function formatClock(minutes: number): string {
+  const date = new Date(2000, 0, 1, Math.floor(minutes / 60), minutes % 60)
+  return new Intl.DateTimeFormat(dateLocale(), { hour: 'numeric', minute: '2-digit' }).format(date)
+}
+
+/**
  * The locale to format dates in: the browser's own regional variant when it
  * speaks the app's language (en-GB keeps day-before-month, de-AT its month
  * names), else the app's language itself.

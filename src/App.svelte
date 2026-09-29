@@ -3,6 +3,7 @@
   import MetronomePage from './pages/MetronomePage.svelte'
   import DrinkMixPage from './pages/DrinkMixPage.svelte'
   import TaperPlannerPage from './pages/TaperPlannerPage.svelte'
+  import RaceFuelPage from './pages/RaceFuelPage.svelte'
   import RacePredictorPage from './pages/RacePredictorPage.svelte'
   import WorkoutsPage from './pages/WorkoutsPage.svelte'
   import YouTubeWorkoutsPage from './pages/YouTubeWorkoutsPage.svelte'
@@ -21,6 +22,7 @@
     '/metronome': MetronomePage,
     '/drink-mix': DrinkMixPage,
     '/taper-planner': TaperPlannerPage,
+    '/race-fuel': RaceFuelPage,
     '/race-predictor': RacePredictorPage,
     '/workouts': WorkoutsPage,
     '/youtube-workouts': YouTubeWorkoutsPage,
@@ -237,9 +239,13 @@
     }
   }
 
-  /* 70rem: the widest language (German, Spanish) fits brand, labelled nav
-     and the language picker. */
-  @media (min-width: 70rem) {
+  /* 72rem: the widest language (German, Spanish) fits brand, labelled nav
+     and the language picker — with eight tools, only once the pills tighten. */
+  @media (min-width: 72rem) {
+    nav a {
+      padding: 0.4rem 0.6rem;
+    }
+
     nav a span {
       position: static;
       width: auto;

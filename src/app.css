@@ -317,6 +317,7 @@ input[type='range']::-moz-range-thumb {
 .tool input[type='number'],
 .tool input[type='text'],
 .tool input[type='date'],
+.tool input[type='time'],
 .tool select {
   padding: 0.5rem 0.7rem;
   border: 1px solid var(--border-strong);
@@ -331,7 +332,8 @@ input[type='range']::-moz-range-thumb {
 
 .tool input[type='number'],
 .tool input[type='text'],
-.tool input[type='date'] {
+.tool input[type='date'],
+.tool input[type='time'] {
   text-align: right;
 }
 
