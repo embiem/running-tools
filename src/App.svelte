@@ -10,7 +10,7 @@
   import PainMapPage from './pages/PainMapPage.svelte'
   import PWABadge from './lib/PWABadge.svelte'
   import Icon from './lib/Icon.svelte'
-  import { TOOLS } from './lib/tools'
+  import TopNav from './lib/TopNav.svelte'
   import { LANGUAGES, getLanguage, setLanguage } from './lib/i18n.svelte'
   import type { Locale } from './lib/i18n.svelte'
   import { m } from './paraglide/messages.js'
@@ -55,19 +55,7 @@
       <span class="wordmark">running<span>tools</span></span>
     </a>
     <div class="end">
-      <nav aria-label={m.app_nav_label()}>
-        {#each TOOLS as tool (tool.route)}
-          <a
-            href="/#{tool.route}"
-            class:active={route === tool.route}
-            aria-current={route === tool.route ? 'page' : undefined}
-            title={tool.name()}
-          >
-            <Icon name={tool.icon} size={16} />
-            <span>{tool.short()}</span>
-          </a>
-        {/each}
-      </nav>
+      <TopNav {route} />
       <!-- Each language by its own name; picking one re-renders in place. -->
       <label class="language" title={m.app_language()}>
         <Icon name="globe" size={16} />
@@ -102,7 +90,9 @@
     border-bottom: 1px solid var(--border);
   }
 
+  /* Positioned: the tool menu hangs off the bar's content column. */
   .bar {
+    position: relative;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -112,6 +102,7 @@
   }
 
   .brand {
+    flex: none;
     display: flex;
     align-items: center;
     gap: 0.55rem;
@@ -145,40 +136,18 @@
     margin-left: 0.15em;
   }
 
+  /* Everything right of the brand: the nav takes what the picker leaves. */
   .end {
+    flex: 1 1 auto;
+    min-width: 0;
     display: flex;
+    justify-content: flex-end;
     align-items: center;
     gap: 0.5rem;
   }
 
-  nav {
-    display: none;
-    gap: 0.25rem;
-  }
-
-  nav a {
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-    padding: 0.4rem 0.75rem;
-    border-radius: 999px;
-    color: var(--muted);
-    font-size: 0.85rem;
-    font-weight: 600;
-  }
-
-  nav a:hover {
-    color: var(--text);
-    background: var(--surface);
-    text-decoration: none;
-  }
-
-  nav a.active {
-    color: var(--text);
-    background: var(--surface-2);
-  }
-
   .language {
+    flex: none;
     position: relative;
     display: flex;
     align-items: center;
@@ -221,37 +190,5 @@
   option {
     background: var(--surface);
     color: var(--text);
-  }
-
-  /* Icons only until the labels fit; the label stays for screen readers. */
-  nav a span {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip-path: inset(50%);
-    white-space: nowrap;
-  }
-
-  @media (min-width: 52rem) {
-    nav {
-      display: flex;
-    }
-  }
-
-  /* 72rem: the widest language (German, Spanish) fits brand, labelled nav
-     and the language picker — with eight tools, only once the pills tighten. */
-  @media (min-width: 72rem) {
-    nav a {
-      padding: 0.4rem 0.6rem;
-    }
-
-    nav a span {
-      position: static;
-      width: auto;
-      height: auto;
-      overflow: visible;
-      clip-path: none;
-    }
   }
 </style>
